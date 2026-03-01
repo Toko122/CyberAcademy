@@ -71,26 +71,30 @@ const MentorsComponent = () => {
               key={mentor.id} 
               className="group relative h-[450px] w-full overflow-hidden rounded-2xl bg-slate-800"
             >
-
               <img
                 src={mentor.image}
                 alt={mentor.name}
-                className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
+                /* hover: პრეფიქსი უზრუნველყოფს რომ ეფექტი მხოლოდ მაუსის დროს ჩაირთოს */
+                className="h-full w-full object-cover transition-transform duration-500 lg:group-has-[:hover]:scale-110"
               />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-90 transition-opacity duration-300" />
+              {/* ფონი: მობილურზე (სტატიკურად) მუქია, დესკტოპზე ჰოვერამდე უფრო გამჭვირვალე */}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-100 lg:opacity-60 lg:group-hover:opacity-90 transition-opacity duration-300" />
 
-              <div className="absolute inset-x-0 bottom-0 p-6 translate-y-[65%] group-hover:translate-y-0 transition-transform duration-500 ease-out">
+              {/* ტექსტი: მობილურზე default-ად ჩანს ბოლოში, დესკტოპზე (lg) იმალება/ჩადის დაბლა */}
+              <div className="absolute inset-x-0 bottom-0 p-6 transition-transform duration-500 ease-out translate-y-0 lg:translate-y-[60%] lg:group-hover:translate-y-0">
                 <div className="mb-4">
                   <h3 className="text-2xl font-bold text-white">{mentor.name}</h3>
                   <p className="text-cyan-400 font-medium">{mentor.role}</p>
                 </div>
                 
-                <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
-                  <p className="text-gray-300 text-sm leading-relaxed border-t border-white/10 pt-4">
-                    {mentor.description}
-                  </p>
-                 
+                {/* აღწერა: მობილურზე ჩანს, დესკტოპზე მხოლოდ ჰოვერზე */}
+                <div className="transition-opacity duration-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100">
+                  {mentor.description && (
+                    <p className="text-gray-300 text-sm leading-relaxed border-t border-white/10 pt-4">
+                      {mentor.description}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
