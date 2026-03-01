@@ -10,17 +10,17 @@ interface MentorItem {
 const mentors: MentorItem[] = [
   {
     id: 1,
-    href: '/mentors/1',
+    href: '/features/mentors',
     image: '/kaxi.jpg',
   },
   {
     id: 2,
-    href: '/mentors/2',
+    href: '/features/mentors',
     image: '/mentors1.jpeg',
   },
   {
     id: 3,
-    href: '/mentors/3',
+    href: '/features/mentors',
     image: '/mentors3.jpeg',
   },
 ]
