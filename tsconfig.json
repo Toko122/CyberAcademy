@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-  ],
+, "src/components/hero/GridScan.tsx", "src/components/hero/Main.js"  ],
   "exclude": ["node_modules"]
 }
