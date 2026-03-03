@@ -66,14 +66,14 @@ const Main = () => {
 
   const getSizeClass = (size) => {
     switch (size) {
-      case 'wide': return 'lg:col-span-2'
-      case 'thin': return 'lg:col-span-1'
-      default: return ''
+      case 'wide': return 'lg:col-span-2 sm:col-span-2'
+      case 'thin': return 'lg:col-span-1 sm:col-span-1'
+      default: return 'col-span-1'
     }
   }
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-slate-950 flex items-center justify-center p-4">
+    <div className="relative w-full min-h-screen bg-slate-950 flex items-center justify-center p-4 md:p-8 overflow-x-hidden overflow-y-auto">
       
       {/* Background Grid */}
       <div className="fixed inset-0 z-0">
@@ -91,7 +91,7 @@ const Main = () => {
         />
       </div>
 
-      <div className="relative z-10 w-full max-w-[1200px] h-full max-h-[90vh] flex flex-col justify-center">
+      <div className="relative z-10 w-full max-w-[1200px] py-10">
         <motion.div 
           variants={containerVariants}
           initial="hidden"
@@ -119,17 +119,16 @@ const Main = () => {
                 }}
                 className={`
                   ${getSizeClass(patch.size)}
-                  /* სიმაღლე გაზრდილია min-h-ით და დინამიურია */
-                  min-h-[140px] lg:min-h-[160px] 
-                  rounded-[2rem] flex items-center justify-center
-                  text-white text-xl lg:text-2xl font-extralight cursor-pointer tracking-widest
-                  transition-all duration-500 relative group overflow-hidden px-8
+                  min-h-[120px] lg:min-h-[160px] 
+                  rounded-[1.5rem] lg:rounded-[2rem] flex items-center justify-center
+                  text-white text-lg lg:text-2xl font-extralight cursor-pointer tracking-widest
+                  transition-all duration-500 relative group overflow-hidden px-6 lg:px-8
                 `}
               >
                 {/* Hover Glow Effect */}
                 <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 
-                <span className="relative z-10 drop-shadow-2xl text-center leading-tight uppercase">
+                <span className="relative z-10 drop-shadow-2xl text-center leading-tight uppercase select-none">
                   {patch.title}
                 </span>
               </motion.div>
@@ -141,7 +140,7 @@ const Main = () => {
                     initial={{ opacity: 0, height: 0, margin: 0 }}
                     animate={{ opacity: 1, height: 'auto', margin: '12px 0' }}
                     exit={{ opacity: 0, height: 0, margin: 0 }}
-                    className="col-span-full overflow-hidden"
+                    className="col-span-1 sm:col-span-2 lg:col-span-3 overflow-hidden"
                   >
                     <motion.div
                       style={{ 
@@ -149,13 +148,13 @@ const Main = () => {
                         backdropFilter: 'blur(30px)',
                         border: '1px solid rgba(255, 255, 255, 0.1)'
                       }}
-                      className="rounded-[2.5rem] p-10 text-white shadow-2xl flex flex-col items-center justify-center border-t border-white/20"
+                      className="rounded-[1.5rem] lg:rounded-[2.5rem] p-6 lg:p-10 text-white shadow-2xl flex flex-col items-center justify-center border-t border-white/20"
                     >
-                       <h2 className="text-3xl font-thin uppercase tracking-[0.4em] mb-6">{patch.title}</h2>
-                       <div className="h-[1px] w-24 bg-white/30 mb-6" />
-                       <p className="text-white/70 text-base lg:text-lg font-light text-center max-w-2xl leading-relaxed">
-                          ინფორმაცია ამ სექციის შესახებ არის დეტალური და მოწოდებული კომპაქტურ ფორმატში.
-                          დიზაინი მორგებულია მაქსიმალურ კომფორტზე.
+                       <h2 className="text-xl lg:text-3xl font-thin uppercase tracking-[0.2em] lg:tracking-[0.4em] mb-4 lg:mb-6 text-center">{patch.title}</h2>
+                       <div className="h-[1px] w-16 lg:w-24 bg-white/30 mb-4 lg:mb-6" />
+                       <p className="text-white/70 text-sm lg:text-lg font-light text-center max-w-2xl leading-relaxed">
+                         ინფორმაცია ამ სექციის შესახებ არის დეტალური და მოწოდებული კომპაქტურ ფორმატში.
+                         დიზაინი მორგებულია მაქსიმალურ კომფორტზე.
                        </p>
                     </motion.div>
                   </motion.div>
