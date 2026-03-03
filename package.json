@@ -14,6 +14,7 @@
     "face-api.js": "^0.22.2",
     "force": "^0.0.3",
     "framer-motion": "^12.34.4",
+    "gsap": "^3.14.2",
     "iframe": "^1.0.0",
     "lucide-react": "^0.575.0",
     "next": "16.1.6",
