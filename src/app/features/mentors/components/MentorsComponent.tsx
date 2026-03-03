@@ -1,4 +1,9 @@
+'use client'
+
 import React from 'react'
+import Card from './MentorsCard'
+import { motion, Variants } from 'framer-motion'
+import Link from 'next/link'
 
 interface Mentor {
   id: number
@@ -9,94 +14,58 @@ interface Mentor {
 }
 
 const mentors: Mentor[] = [
-  {
-    id: 1,
-    name: "დემიდ ფასიეშვილი",
-    role: "აკადემიის დამფუძნებელი",
-    description: "",
-    image: "/mentors1.jpeg",
-  },
-  {
-    id: 2,
-    name: "ზურაბ მესხიძე",
-    role: "აკადემიის დამფუძნებელი",
-    description: "",
-    image: "/mentors3.jpeg",
-  },
-  {
-    id: 3,
-    name: "კახი კახიძე",
-    role: "სტაჟირების პროგრამის მენეჯერი",
-    description: "",
-    image: "/kaxi.jpg",
-  },
-  {
-    id: 4,
-    name: "სოფიო დუმბაძე",
-    role: "აკადემიის მასწავლებელი",
-    description: "",
-    image: "/mentorsofio.jpg",
-  },
-  {
-    id: 5,
-    name: "სოფია სურმანიძე",
-    role: "მოდის დიზაინის მენეჯერი",
-    description: "",
-    image: "/sofia.jpg",
-  },
-  {
-    id: 6,
-    name: "დიანა ანანიძე",
-    role: "აკადემიის მასწავლებელი",
-    description: "",
-    image: "/mentordiana.jpg",
-  },
+  { id: 1, name: "დემიდ ფასიეშვილი", role: "აკადემიის დამფუძნებელი", description: "", image: "/mentors1.jpeg" },
+  { id: 2, name: "ზურაბ მესხიძე", role: "აკადემიის დამფუძნებელი", description: "", image: "/mentors3.jpeg" },
+  { id: 3, name: "კახი კახიძე", role: "სტაჟირების პროგრამის მენეჯერი", description: "", image: "/kaxi.jpg" },
+  { id: 4, name: "სოფიო დუმბაძე", role: "აკადემიის მასწავლებელი", description: "", image: "/mentorsofio.jpg" },
+  { id: 5, name: "სოფია სურმანიძე", role: "მოდის დიზაინის მენეჯერი", description: "", image: "/sofia.jpg" },
+  { id: 6, name: "დიანა ანანიძე", role: "აკადემიის მასწავლებელი", description: "", image: "/mentordiana.jpg" },
 ]
 
-const MentorsComponent = () => {
+const cardVariants: Variants = {
+  hidden: { opacity: 0, y: 50 },
+  visible: (i: number) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.2, duration: 1, ease: 'easeOut' },
+  }),
+}
+
+const MentorsComponent: React.FC = () => {
   return (
-    <section className="bg-[#0F172A] pb-30 pt-38 px-6">
-      <div className="max-w-7xl mx-auto">
+    <section className="bg-[#0F172A] min-h-screen px-6 flex flex-col justify-center items-center md:py-20 py-10">
+
+      <div className="mb-12 w-full max-w-7xl flex flex-col md:flex-row justify-between items-center">
         
-        <div className="text-center mb-16">
+        <div className="text-center md:text-left mb-4 md:mb-0">
           <h2 className="text-4xl md:text-5xl text-white font-bold mb-4">
             ჩვენი <span className="text-cyan-500">მენტორები</span>
           </h2>
-          <div className="h-1.5 w-20 bg-cyan-500 mx-auto rounded-full" />
+          <div className="h-1.5 w-20 bg-cyan-500 mx-auto md:mx-0 rounded-full" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {mentors.map((mentor) => (
-            <div 
-              key={mentor.id} 
-              className="group relative h-[450px] w-full overflow-hidden rounded-2xl bg-slate-800"
+        <Link href="/" passHref>
+          <button className="px-6 cursor-pointer py-3 bg-white/10 backdrop-blur-md text-cyan-400 font-semibold rounded-lg border border-cyan-400 hover:bg-cyan-400 hover:text-[#0F172A] transition-all duration-300 shadow-md">
+            მთავარი გვერდი
+          </button>
+        </Link>
+
+      </div>
+
+      <div className="w-full max-w-7xl mx-auto">
+        <div className="flex flex-wrap gap-8 justify-center items-center">
+          {mentors.map((mentor, index) => (
+            <motion.div
+              key={mentor.id}
+              custom={index}
+              initial="hidden"
+              animate="visible"
+              variants={cardVariants}
             >
-              <img
-                src={mentor.image}
-                alt={mentor.name}
-                className="h-full w-full object-cover transition-transform duration-500 lg:group-has-[:hover]:scale-110"
-              />
-
-              <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/40 to-transparent opacity-100 lg:opacity-60 lg:group-hover:opacity-90 transition-opacity duration-300" />
-
-              <div className="absolute inset-x-0 bottom-0 p-6 transition-transform duration-500 ease-out translate-y-0 lg:translate-y-[60%] lg:group-hover:translate-y-0">
-                <div className="mb-4">
-                  <h3 className="text-2xl font-bold text-white">{mentor.name}</h3>
-                  <p className="text-cyan-400 font-medium">{mentor.role}</p>
-                </div>
-                
-                <div className="transition-opacity duration-500 opacity-100 lg:opacity-0 lg:group-hover:opacity-100">
-                  {mentor.description && (
-                    <p className="text-gray-300 text-sm leading-relaxed border-t border-white/10 pt-4">
-                      {mentor.description}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </div>
+              <Card mentor={mentor} />
+            </motion.div>
           ))}
         </div>
-        
       </div>
     </section>
   )
