@@ -1,10 +1,15 @@
 import React from 'react'
-import GalleryComponent from './components/GalleryComponent'
+import PCCard from './components/PCCard'
 
 const GalleryPage = () => {
   return (
-    <div>
-        <GalleryComponent />
+    <div className="flex justify-center items-center min-h-screen bg-gray-900">
+      <PCCard
+        name="Kakhi Kakhidze"
+        role="Web Project Mentor"
+        avatar='/kaxi.jpg'
+        linkedin="https://linkedin.com/in/kakhi-kakhidze"
+      />
     </div>
   )
 }
