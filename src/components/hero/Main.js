@@ -1,28 +1,27 @@
 'use client'
 
-import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
+import React from 'react'
+import { motion } from 'framer-motion'
 import { GridScan } from './GridScan'
 import Link from 'next/link'
 
 const patches = [
+  { id: 1, title: 'გუნდი', link: '/features/mentors', span: 'col-span-1 lg:col-span-4' },
+  { id: 2, title: 'LOGO', link: '/', span: 'col-span-1 lg:col-span-4', isLogo: true },
+  { id: 3, title: 'პროფესიული კურსები', link: '/features/courses', span: 'col-span-1 lg:col-span-4' },
 
-  { id: 1, title: 'გუნდი',             link: '/features/mentors',  span: 'col-span-1 lg:col-span-4' },
-  { id: 2, title: 'კარიერა',           link: '/features/courses',  span: 'col-span-1 lg:col-span-4' },
-  { id: 3, title: 'პროფესიული კურსები', link: '/features/courses',  span: 'col-span-1 lg:col-span-4' },
+  { id: 4, title: 'კურსები', link: '/features/courses', span: 'col-span-1 lg:col-span-6' },
+  { id: 5, title: 'ჩვენს შესახებ', link: '/features/courses', span: 'col-span-1 lg:col-span-6' },
 
-  { id: 4, title: 'კურსები',           link: '/features/courses',  span: 'col-span-1 lg:col-span-6' },
-  { id: 5, title: 'ჩვენს შესახებ',     link: '/features/courses',  span: 'col-span-1 lg:col-span-6' },
-
-  { id: 6, title: 'პარტნიორები',       link: '/features/courses',  span: 'col-span-1 lg:col-span-3' },
-  { id: 7, title: 'გალერეა',           link: '/features/gallery',  span: 'col-span-1 lg:col-span-3' },
-  { id: 8, title: 'კონტაქტი',          link: '/features/courses',  span: 'col-span-1 lg:col-span-3' },
-  { id: 9, title: 'სოციალური მედია',   link: '/features/courses',  span: 'col-span-1 lg:col-span-3' },
+  { id: 6, title: 'პარტნიორები', link: '/features/courses', span: 'col-span-1 lg:col-span-3' },
+  { id: 7, title: 'გალერეა', link: '/features/gallery', span: 'col-span-1 lg:col-span-3' },
+  { id: 8, title: 'კონტაქტი', link: '/features/courses', span: 'col-span-1 lg:col-span-3' },
+  { id: 9, title: 'კარიერა', link: '/features/courses', span: 'col-span-1 lg:col-span-3' }, 
 ]
 
 const glassColors = {
   1: 'rgba(252, 211, 77, 0.18)',
-  2: 'rgba(110, 231, 183, 0.18)',
+  2: 'rgba(255, 255, 255, 0.05)',
   3: 'rgba(252, 165, 165, 0.18)',
   4: 'rgba(147, 197, 253, 0.18)',
   5: 'rgba(252, 211, 77, 0.18)',
@@ -68,7 +67,7 @@ const cardVariants = {
 const Main = () => {
   return (
     <div className="relative w-full min-h-screen bg-slate-950 flex items-center justify-center p-4 md:p-8 overflow-x-hidden overflow-y-auto">
-
+      
       <div className="fixed inset-0 z-0">
         <GridScan
           sensitivity={0.6}
@@ -92,49 +91,64 @@ const Main = () => {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 lg:gap-6 italic"
         >
           {patches.map((patch) => {
-            const cardContent = (
-              <motion.div
-                custom={patch.id}
-                variants={cardVariants}
-                whileHover={{
-                  scale: 1.02,
-                  y: -8,
-                  backgroundColor: "rgba(255, 255, 255, 0.25)",
-                  boxShadow: "0 20px 40px rgba(0,0,0,0.4)"
-                }}
-                whileTap={{ scale: 0.98 }}
-                style={{
-                  backgroundColor: glassColors[patch.id],
-                  backdropFilter: 'blur(16px)',
-                  border: '1px solid rgba(255, 255, 255, 0.1)',
-                  borderTop: '1px solid rgba(255, 255, 255, 0.3)'
-                }}
-                className={`
-                  min-h-[120px] lg:min-h-[160px]
-                  rounded-[1.5rem] lg:rounded-[2rem] flex items-center justify-center
-                  text-white text-lg lg:text-2xl font-extralight cursor-pointer tracking-widest
-                  transition-all duration-500 relative group overflow-hidden px-6 lg:px-8
-                `}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <span className="relative z-10 drop-shadow-2xl text-center leading-tight uppercase select-none">
-                  {patch.title}
-                </span>
-              </motion.div>
-            )
+  const isLogoCard = patch.isLogo;
 
-            return (
-              <div key={patch.id} className={patch.span}>
-                {patch.link ? (
-                  <Link href={patch.link} passHref className="block h-full">
-                    {cardContent}
-                  </Link>
-                ) : (
-                  cardContent
-                )}
-              </div>
-            )
-          })}
+  const cardContent = (
+    <motion.div
+      custom={patch.id}
+      variants={cardVariants}
+      whileHover={{
+        scale: 1.05,
+        y: isLogoCard ? -5 : -8,
+        backgroundColor: isLogoCard ? "transparent" : "rgba(255, 255, 255, 0.25)",
+        boxShadow: isLogoCard ? "none" : "0 20px 40px rgba(0,0,0,0.4)"
+      }}
+      whileTap={{ scale: 0.98 }}
+      style={{
+        backgroundColor: isLogoCard ? 'transparent' : glassColors[patch.id],
+        backdropFilter: isLogoCard ? 'none' : 'blur(16px)',
+        border: isLogoCard ? 'none' : '1px solid rgba(255, 255, 255, 0.1)',
+        borderTop: isLogoCard ? 'none' : '1px solid rgba(255, 255, 255, 0.3)'
+      }}
+      className={`
+        min-h-[120px] lg:min-h-[160px]
+        rounded-[1.5rem] lg:rounded-[2rem] flex items-center justify-center
+        text-white text-lg lg:text-2xl font-extralight cursor-pointer tracking-widest
+        transition-all duration-500 relative group overflow-hidden px-6 lg:px-8
+      `}
+    >
+      {!isLogoCard && (
+        <div className="absolute inset-0 bg-gradient-to-br from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      )}
+      
+      <div className="relative z-10 flex items-center justify-center w-full h-full">
+        {isLogoCard ? (
+          <img 
+            src="/cyberAcademy.png" 
+            alt="Cyber Academy Logo" 
+            className="h-20 lg:h-32 w-auto object-contain invert brightness-[20%] contrast-100 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+          />
+        ) : (
+          <span className="drop-shadow-2xl text-center leading-tight uppercase select-none">
+            {patch.title}
+          </span>
+        )}
+      </div>
+    </motion.div>
+  )
+
+  return (
+    <div key={patch.id} className={patch.span}>
+      {patch.link ? (
+        <Link href={patch.link} passHref className="block h-full">
+          {cardContent}
+        </Link>
+      ) : (
+        cardContent
+      )}
+    </div>
+  )
+})}
         </motion.div>
       </div>
     </div>
