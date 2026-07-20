@@ -14,6 +14,7 @@ jobs:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
+          fingerprint: "SHA256:TaLfZhTmOj+vbZHxsDHOwrCGFM9vE4XEIaTdI5tdmGk"
           debug: true
           script: |
             cd /var/www/html
