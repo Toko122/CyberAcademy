@@ -18,10 +18,10 @@ function configureCloudinary() {
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
 
-export async function uploadImage(file: File): Promise<string> {
-  configureCloudinary();
+export async function uploadImage(file: Blob): Promise<string> {
   if (!ALLOWED_IMAGE_TYPES.has(file.type)) throw new Error("Unsupported image type");
   if (file.size <= 0 || file.size > MAX_IMAGE_BYTES) throw new Error("Image must be between 1 byte and 5 MB");
+  configureCloudinary();
   const bytes = Buffer.from(await file.arrayBuffer());
   const uploaded = await new Promise<UploadApiResponse>((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(

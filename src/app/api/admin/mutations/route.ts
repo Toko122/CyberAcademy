@@ -83,7 +83,9 @@ export async function POST(request: Request) {
     const oldImage = action === "update" ? await currentImage(entity, id) : "";
     let imageUrl = oldImage || text(form, "existingImage", 2048);
     let uploadedUrl = "";
-    if (file instanceof File && file.size > 0) {
+    // Server runtimes do not always expose `File` as a global constructor.
+    // FormData already guarantees that a non-string entry is file-like.
+    if (file !== null && typeof file !== "string" && file.size > 0) {
       uploadedUrl = await uploadImage(file);
       imageUrl = uploadedUrl;
     }
@@ -136,7 +138,22 @@ export async function POST(request: Request) {
       throw error;
     }
   } catch (error) {
-    const message = error instanceof Error && error.message.startsWith("Invalid") ? error.message : "Unable to process mutation";
-    return NextResponse.json({ success: false, message }, { status: message.startsWith("Invalid") ? 400 : 500 });
+    console.error("Admin mutation failed", error);
+
+    const errorMessage = error instanceof Error ? error.message : "";
+    const isValidationError = errorMessage.startsWith("Invalid")
+      || errorMessage === "Unsupported image type"
+      || errorMessage === "Image must be between 1 byte and 5 MB";
+    const isCloudinaryConfigError = errorMessage.startsWith("CLOUDY_");
+    const message = isValidationError
+      ? errorMessage
+      : isCloudinaryConfigError
+        ? "Image storage is not configured"
+        : "Unable to upload or save the item";
+
+    return NextResponse.json(
+      { success: false, message },
+      { status: isValidationError ? 400 : isCloudinaryConfigError ? 503 : 500 },
+    );
   }
 }
