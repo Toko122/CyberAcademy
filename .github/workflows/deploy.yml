@@ -1,12 +1,4 @@
-name: Deploy to Production
-on:
-  push:
-    branches: [main]
-jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy via SSH
+- name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SERVER_HOST }}
@@ -14,4 +6,10 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             cd /var/www/html
-            git pull origin main
+            # Force reset the repository to match GitHub exactly
+            git fetch origin
+            git reset --hard origin/main
+            # Now run the build
+            npm install --legacy-peer-deps
+            npm run build
+            pm2 restart academy
