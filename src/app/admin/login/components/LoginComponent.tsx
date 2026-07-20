@@ -41,7 +41,7 @@ const LoginComponent = () => {
       <div className="max-w-md w-full space-y-6 sm:space-y-8 p-5 sm:p-8 md:p-10 bg-white rounded-xl shadow-lg border border-gray-100">
         <div className="text-center">
           <h2 className="mt-3 sm:mt-6 text-2xl sm:text-3xl font-extrabold text-gray-900">
-            Admin Portal
+            Admin
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             გთხოვთ გაიაროთ ავტორიზაცია
