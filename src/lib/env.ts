@@ -1,10 +1,11 @@
 import "server-only";
+import { ConfigurationError } from "@/lib/errors";
 
 type DbSslMode = "disable" | "require";
 
 function required(name: string, value: string | undefined, minimumLength = 1): string {
   if (!value || value.length < minimumLength) {
-    throw new Error(`${name} is required${minimumLength > 1 ? ` and must contain at least ${minimumLength} characters` : ""}`);
+    throw new ConfigurationError(`${name} is required${minimumLength > 1 ? ` and must contain at least ${minimumLength} characters` : ""}`);
   }
   return value;
 }
@@ -12,7 +13,7 @@ function required(name: string, value: string | undefined, minimumLength = 1): s
 function dbSslMode(value: string | undefined): DbSslMode {
   if (!value || value === "disable") return "disable";
   if (value === "require") return "require";
-  throw new Error("DB_SSL must be either 'disable' or 'require'");
+  throw new ConfigurationError("DB_SSL must be either 'disable' or 'require'");
 }
 
 export const serverEnv = Object.freeze({
@@ -29,4 +30,3 @@ export function requireCloudinaryEnv() {
     apiSecret: required("CLOUDY_SECRET", process.env.CLOUDY_SECRET),
   });
 }
-

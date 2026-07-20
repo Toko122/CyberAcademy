@@ -3,7 +3,6 @@ import Link from "next/link";
 import { listPartners } from "@/lib/repositories/content";
 
 export const revalidate = 60;
-export const dynamic = "force-dynamic";
 
 export default async function PartnersPage() {
   const rawPartners = await listPartners(50);

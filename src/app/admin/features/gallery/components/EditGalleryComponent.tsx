@@ -199,7 +199,7 @@ const EditGalleryComponent = ({ image: galleryImage }: EditGalleryComponentProps
                 onChange={handleImageChange}
                 type="file"
                 className="absolute inset-0 opacity-0 cursor-pointer"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/gif"
               />
             </div>
           </motion.div>

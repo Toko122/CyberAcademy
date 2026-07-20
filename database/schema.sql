@@ -28,6 +28,7 @@ CREATE TABLE IF NOT EXISTS public.courses (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT courses_title_nonblank CHECK (btrim(title) <> ''),
+  CONSTRAINT courses_image_nonblank CHECK (btrim(image) <> ''),
   CONSTRAINT courses_price_nonnegative CHECK (price >= 0),
   CONSTRAINT courses_category_allowed CHECK (
     category IN ('პროგრამირება', 'დიზაინი', 'მარკეტინგი', 'IT სპეციალისტი')
@@ -42,7 +43,8 @@ CREATE TABLE IF NOT EXISTS public.gallery (
   category text NOT NULL DEFAULT '',
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
-  CONSTRAINT gallery_title_nonblank CHECK (btrim(title) <> '')
+  CONSTRAINT gallery_title_nonblank CHECK (btrim(title) <> ''),
+  CONSTRAINT gallery_image_nonblank CHECK (btrim(image) <> '')
 );
 
 CREATE TABLE IF NOT EXISTS public.groups (
@@ -54,6 +56,7 @@ CREATE TABLE IF NOT EXISTS public.groups (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT groups_name_nonblank CHECK (btrim(name) <> ''),
+  CONSTRAINT groups_image_nonblank CHECK (btrim(image) <> ''),
   CONSTRAINT groups_position_nonblank CHECK (btrim(position) <> '')
 );
 
@@ -65,6 +68,7 @@ CREATE TABLE IF NOT EXISTS public.partners (
   created_at timestamptz NOT NULL DEFAULT now(),
   updated_at timestamptz NOT NULL DEFAULT now(),
   CONSTRAINT partners_name_nonblank CHECK (btrim(name) <> ''),
+  CONSTRAINT partners_logo_nonblank CHECK (btrim(logo) <> ''),
   CONSTRAINT partners_color_allowed CHECK (
     color IN (
       'bg-cyan-500/10', 'bg-blue-500/10', 'bg-indigo-500/10',

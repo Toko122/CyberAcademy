@@ -3,6 +3,8 @@ import { jwtVerify, SignJWT } from "jose";
 import { query } from "@/lib/db";
 import { createHash, randomBytes, scrypt as scryptCallback, timingSafeEqual } from "crypto";
 import { serverEnv } from "@/lib/env";
+import { SESSION_AUDIENCE, SESSION_COOKIE, SESSION_ISSUER } from "@/lib/session";
+export { SESSION_COOKIE } from "@/lib/session";
 function scrypt(password: string, salt: Buffer, length: number, options: { N: number; r: number; p: number }) {
   return new Promise<Buffer>((resolve, reject) => {
     scryptCallback(password, salt, length, options, (error, derivedKey) => {
@@ -11,10 +13,6 @@ function scrypt(password: string, salt: Buffer, length: number, options: { N: nu
     });
   });
 }
-export const SESSION_COOKIE = "admin_token";
-const SESSION_ISSUER = "cyber-academy";
-const SESSION_AUDIENCE = "cyber-academy-admin";
-
 export type AppRole = "user" | "admin";
 export interface AuthenticatedUser {
   id: string;
@@ -97,7 +95,8 @@ export async function verifySessionToken(token?: string): Promise<{ id: string; 
 }
 
 export async function getAuthenticatedUser(): Promise<AuthenticatedUser | null> {
-  const session = await verifySessionToken(cookies().get(SESSION_COOKIE)?.value);
+  const cookieStore = await cookies();
+  const session = await verifySessionToken(cookieStore.get(SESSION_COOKIE)?.value);
   if (!session) return null;
   const result = await query<AuthenticatedUser>(
     `SELECT id, email::text AS email, role FROM public.users WHERE id = $1 LIMIT 1`,

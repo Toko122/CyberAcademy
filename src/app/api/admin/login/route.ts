@@ -12,12 +12,16 @@ export async function POST(request: Request) {
     const input = body as Record<string, unknown>;
     const email = typeof input.email === "string" ? input.email : "";
     const password = typeof input.password === "string" ? input.password : "";
+    if (email.length > 254 || password.length > 128) {
+      return NextResponse.json({ success: false, message: "Invalid email or password" }, { status: 401 });
+    }
     const user = await authenticateAdmin(email, password);
     if (!user) {
       return NextResponse.json({ success: false, message: "Invalid email or password" }, { status: 401 });
     }
     const token = await createSessionToken(user);
-    cookies().set(SESSION_COOKIE, token, {
+    const cookieStore = await cookies();
+    cookieStore.set(SESSION_COOKIE, token, {
       httpOnly: true,
       secure: serverEnv.isProduction,
       sameSite: "lax",

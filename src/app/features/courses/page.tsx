@@ -3,7 +3,6 @@ import CoursesClient from "./components/CoursesComponent";
 import { listCourses } from "@/lib/repositories/content";
 import { requireAdmin } from "@/lib/auth";
 
-export const revalidate = 60;
 export const dynamic = "force-dynamic";
 
 const CoursesPage = async () => {

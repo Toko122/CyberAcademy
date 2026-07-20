@@ -175,7 +175,7 @@ const CreatePartnerComponent = () => {
                 onChange={handleImageChange}
                 type="file"
                 className="absolute inset-0 opacity-0 cursor-pointer z-20"
-                accept="image/*"
+                accept="image/jpeg,image/png,image/webp,image/gif"
                 required
               />
             </div>

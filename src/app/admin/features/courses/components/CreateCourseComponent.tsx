@@ -172,7 +172,7 @@ const CreateCourseComponent = () => {
                   <span className="text-gray-400 group-hover:text-white transition-colors">ატვირთეთ ფოტო (JPG, PNG)</span>
                 </>
               )}
-              <input onChange={handleImageChange} type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/*" />
+              <input onChange={handleImageChange} type="file" className="absolute inset-0 opacity-0 cursor-pointer" accept="image/jpeg,image/png,image/webp,image/gif" />
             </div>
           </motion.div>
 

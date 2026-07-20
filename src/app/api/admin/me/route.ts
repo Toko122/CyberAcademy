@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
+import { logServerError } from "@/lib/errors";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
@@ -9,7 +12,8 @@ export async function GET() {
       authenticated: true,
       user: { id: user.id, email: user.email, role: user.role },
     });
-  } catch {
+  } catch (error) {
+    logServerError("Admin session check failed", error);
     return NextResponse.json({ authenticated: false }, { status: 503 });
   }
 }

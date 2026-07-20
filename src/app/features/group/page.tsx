@@ -4,7 +4,6 @@ import { listGroups } from "@/lib/repositories/content";
 import { requireAdmin } from "@/lib/auth";
 import Link from "next/link";
 
-export const revalidate = 60;
 export const dynamic = "force-dynamic";
 
 const GroupPage = async () => {

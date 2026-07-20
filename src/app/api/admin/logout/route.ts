@@ -4,7 +4,8 @@ import { SESSION_COOKIE } from "@/lib/auth";
 import { serverEnv } from "@/lib/env";
 
 export async function POST() {
-  cookies().set(SESSION_COOKIE, "", {
+  const cookieStore = await cookies();
+  cookieStore.set(SESSION_COOKIE, "", {
     httpOnly: true,
     secure: serverEnv.isProduction,
     sameSite: "lax",

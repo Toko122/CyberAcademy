@@ -4,6 +4,7 @@ import React, { useRef, memo, useState, useCallback } from 'react'
 import Image from 'next/image'
 import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
 import { useRouter } from 'next/navigation'
+import { adminFetch } from '@/lib/adminApi'
 
 interface IGroup {
   id: string;
@@ -54,10 +55,11 @@ const GroupCard: React.FC<{ member: IGroup; isAdmin?: boolean }> = ({ member, is
     if (!confirm('ნამდვილად გსურთ წევრის წაშლა?')) return
     setIsDeleting(true)
     try {
-      const response = await fetch(`/admin/features/group/api/deleteGroup?id=${member.id}`, {
-        method: 'DELETE',
+      const result = await adminFetch('/api/admin/mutations', {
+        method: 'POST',
+        body: JSON.stringify({ entity: 'groups', action: 'delete', id: member.id }),
       });
-      if (!response.ok) {
+      if (!result.ok) {
         throw new Error('Delete failed');
       }
       router.refresh();

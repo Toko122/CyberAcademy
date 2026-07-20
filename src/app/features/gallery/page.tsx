@@ -3,7 +3,6 @@ import GalleryComponent from "./components/GalleryComponent";
 import { listGallery } from "@/lib/repositories/content";
 
 export const revalidate = 60;
-export const dynamic = "force-dynamic";
 
 const GalleryPage = async () => {
   const rawImages = await listGallery(100);
