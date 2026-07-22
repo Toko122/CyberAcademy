@@ -63,6 +63,7 @@ const EditGroupComponent = ({ member }: EditGroupComponentProps) => {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError(null);
     setSuccess(false);

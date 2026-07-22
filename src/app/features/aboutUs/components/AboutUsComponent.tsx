@@ -1,11 +1,17 @@
 import React from 'react';
 import Image from 'next/image';
 import { Phone, Mail, MapPin } from 'lucide-react'; 
+import Link from 'next/link';
 
 const AboutUsComponent = () => {
   return (
     <div className="min-h-screen bg-[#16213B] pb-12 pt-28 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto shadow-xl rounded-2xl overflow-hidden">
+        <div className="px-4 pt-4 sm:px-8 sm:pt-8">
+          <Link href="/" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-cyan-500/50 bg-white/5 px-6 py-3 font-bold text-cyan-300 transition hover:bg-cyan-500 hover:text-white">
+            მთავარი გვერდი
+          </Link>
+        </div>
         
         <div className="flex justify-center pt-10">
           <Image 

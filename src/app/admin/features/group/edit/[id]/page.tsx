@@ -6,7 +6,7 @@ import { getGroup } from "@/lib/repositories/content";
 export default async function EditGroupPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!(await requireAdmin())) redirect("/admin/login");
-  const member = await getGroup(id).catch(() => null);
+  const member = await getGroup(id);
   if (!member) notFound();
   return <EditGroupComponent member={{
     id: member.id, name: member.name, description: member.description ?? "",

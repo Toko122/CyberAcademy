@@ -3,7 +3,7 @@
 import Link from "next/link";
 import React, { memo, useMemo, useState } from "react";
 import Image from "next/image";
-import { motion, useMotionValue, useTransform, useSpring } from "framer-motion";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { adminFetch } from "@/lib/adminApi";
 
@@ -33,19 +33,7 @@ const CourseCard = memo(({
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const x = useMotionValue(0);
-  const y = useMotionValue(0);
-
-  const mouseXSpring = useSpring(x);
-  const mouseYSpring = useSpring(y);
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["20deg", "-20deg"]);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-20deg", "20deg"]);
-
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
+  const handleDelete = async () => {
     if (!isAdmin) return alert("არ გაქვს წვდომა!");
 
     if (!confirm("ნამდვილად გსურთ კურსის წაშლა?")) return;
@@ -66,27 +54,10 @@ const CourseCard = memo(({
     router.refresh();
   };
 
-  const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
+  const handleEdit = () => {
     if (!isAdmin) return alert("არ გაქვს წვდომა!");
 
     router.push(`/admin/features/courses/edit/${id}`);
-  };
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    x.set(mouseX / rect.width - 0.5);
-    y.set(mouseY / rect.height - 0.5);
-  };
-
-  const handleMouseLeave = () => {
-    x.set(0);
-    y.set(0);
   };
 
   if (isDeleting) return null;
@@ -98,70 +69,56 @@ const CourseCard = memo(({
         visible: { opacity: 1, y: 0 },
       }}
       transition={{ type: "spring", duration: 0.8, bounce: 0.3 }}
-      onMouseMove={handleMouseMove}
-      onMouseLeave={handleMouseLeave}
-      style={{ perspective: "1500px" }}
+      className="h-full"
     >
-      <motion.div
-        style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-        className="group relative bg-[#1e293b]/40 backdrop-blur-xl border border-white/10 rounded-2xl sm:rounded-3xl p-4 sm:p-5 h-full transition-shadow hover:shadow-[0_0_50px_rgba(6,182,212,0.3)]"
-      >
-        <Link href={`/features/courses/${id}`} className="block">
-          <div
-            style={{ transform: "translateZ(50px)" }}
-            className="relative w-full aspect-video overflow-hidden rounded-2xl mb-6 shadow-2xl"
-          >
+      <article className="group flex h-full min-w-0 flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#1e293b]/50 shadow-xl backdrop-blur-xl transition duration-300 hover:-translate-y-1 hover:border-cyan-400/40 hover:shadow-[0_20px_50px_rgba(6,182,212,0.18)]">
+        <Link
+          href={`/features/courses/${id}`}
+          aria-label={`${title} კურსის ნახვა`}
+          className="flex min-h-0 flex-1 flex-col focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-400 focus-visible:ring-inset"
+        >
+          <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-900">
             <Image
               src={image}
               alt={title}
               fill
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              className="object-cover transition-transform duration-700 group-hover:scale-110"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
               quality={85}
             />
-            <div className="absolute top-4 right-4 bg-cyan-500 text-white text-xs font-black px-4 py-1.5 rounded-full shadow-lg z-10">
+            <div className="absolute right-3 top-3 z-10 max-w-[calc(100%-1.5rem)] rounded-full bg-cyan-500 px-3 py-1.5 text-xs font-bold text-white shadow-lg">
               {duration || "9 თვე"}
             </div>
           </div>
 
-          <div style={{ transform: "translateZ(30px)" }} className="space-y-4 min-w-0">
-            <h3 className="text-xl sm:text-2xl font-black text-white group-hover:text-cyan-400 transition-colors">
+          <div className="flex min-w-0 flex-1 flex-col p-5 sm:p-6">
+            <h3 className="line-clamp-2 text-xl font-black leading-tight text-white transition-colors group-hover:text-cyan-400 sm:text-2xl">
               {title}
             </h3>
-            <p className="text-gray-400 text-sm leading-relaxed line-clamp-2">
+            <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-gray-400">
               {description}
             </p>
 
-            <div className="pt-5 sm:pt-6 border-t border-white/10 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <span className="text-xl sm:text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
+            <div className="mt-auto flex min-w-0 items-center justify-between gap-4 border-t border-white/10 pt-5">
+              <span className="min-w-0 text-xl font-black text-white sm:text-2xl">
                 {price} ₾
               </span>
-              <div className="flex flex-wrap items-center gap-2">
-                {isAdmin && (
-                  <>
-                    <button
-                      onClick={handleEdit}
-                      className="min-h-11 px-3 cursor-pointer py-2 rounded-xl bg-blue-500/10 text-blue-400 hover:bg-blue-500 hover:text-white transition-all duration-300 z-20 relative text-xs font-bold border border-blue-500/30"
-                    >
-                      რედაქტირება
-                    </button>
-                    <button
-                      onClick={handleDelete}
-                      className="min-h-11 px-3 cursor-pointer py-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all duration-300 z-20 relative text-xs font-bold border border-red-500/30"
-                    >
-                      წაშლა
-                    </button>
-                  </>
-                )}
-                <div className="w-10 h-10 rounded-full bg-cyan-500/10 flex items-center justify-center text-cyan-400 group-hover:bg-cyan-500 group-hover:text-white transition-all duration-300">
-                  →
-                </div>
-              </div>
+              <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-cyan-500/10 text-xl text-cyan-400 transition group-hover:bg-cyan-500 group-hover:text-white" aria-hidden="true">→</span>
             </div>
           </div>
         </Link>
-      </motion.div>
+        {isAdmin && (
+          <div className="grid grid-cols-2 gap-2 border-t border-white/10 p-3">
+            <button type="button" onClick={handleEdit} className="min-h-11 cursor-pointer rounded-xl border border-blue-500/30 bg-blue-500/10 px-3 py-2 text-xs font-bold text-blue-400 transition hover:bg-blue-500 hover:text-white focus-visible:ring-2 focus-visible:ring-blue-400">
+              რედაქტირება
+            </button>
+            <button type="button" onClick={handleDelete} className="min-h-11 cursor-pointer rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-xs font-bold text-red-400 transition hover:bg-red-500 hover:text-white focus-visible:ring-2 focus-visible:ring-red-400">
+              წაშლა
+            </button>
+          </div>
+        )}
+      </article>
     </motion.div>
   );
 });
@@ -199,7 +156,7 @@ export default function CoursesClient({
             </Link>
           </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-10">
+        <div className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8">
           {courses.length > 0 ? (
             courseCards
           ) : (

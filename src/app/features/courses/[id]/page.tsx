@@ -23,22 +23,28 @@ export default function CourseDetails() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
     const fetchCourse = async () => {
       try {
-        const response = await fetch(`/api/courses/${encodeURIComponent(String(id))}`);
+        const response = await fetch(`/api/courses/${encodeURIComponent(String(id))}`, {
+          cache: "no-store",
+          signal: controller.signal,
+        });
         if (!response.ok) {
           setError("კურსი ვერ მოიძებნა ან მოხდა შეცდომა.");
         } else {
           setCourse(await response.json());
         }
-      } catch {
+      } catch (fetchError) {
+        if (fetchError instanceof DOMException && fetchError.name === "AbortError") return;
         setError("კურსი ვერ მოიძებნა ან მოხდა შეცდომა.");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) setLoading(false);
       }
     };
 
-    if (id) fetchCourse();
+    if (id) void fetchCourse();
+    return () => controller.abort();
   }, [id]);
 
 
@@ -68,13 +74,15 @@ export default function CourseDetails() {
   return (
     <main className="min-h-screen bg-[#0F172A] pt-16 sm:pt-20 lg:pt-24 pb-16 sm:pb-20 px-4 md:px-6">
       <div className="max-w-7xl mx-auto">
-        <Link
-          href="/features/courses"
-          className="inline-flex items-center gap-2 text-gray-400 hover:text-cyan-500 transition-colors mb-8 group"
-        >
-          <ArrowLeft size={20} className="group-hover:-translate-x-1 transition-transform" />
-          უკან ყველა კურსზე
-        </Link>
+        <div className="mb-8 flex flex-wrap items-center gap-3">
+          <Link href="/features/courses" className="group inline-flex min-h-11 items-center gap-2 rounded-lg px-3 text-gray-400 transition-colors hover:text-cyan-500">
+            <ArrowLeft size={20} className="transition-transform group-hover:-translate-x-1" />
+            უკან ყველა კურსზე
+          </Link>
+          <Link href="/" className="inline-flex min-h-11 items-center rounded-lg border border-white/10 bg-white/5 px-4 font-semibold text-cyan-400 transition hover:border-cyan-400/50 hover:bg-white/10 hover:text-white">
+            მთავარი გვერდი
+          </Link>
+        </div>
 
         <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
           {/* Image + details */}
@@ -108,12 +116,14 @@ export default function CourseDetails() {
                     <span className="text-2xl font-black text-cyan-400">{course.price} ₾</span>
                   </div>
 
-                  <Link
-                    href="/register"
-                    className="block w-full text-center bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 px-4 sm:px-10 rounded-xl transition-all active:scale-95 shadow-lg shadow-cyan-600/20"
+                  <button
+                    type="button"
+                    disabled
+                    aria-disabled="true"
+                    className="block w-full cursor-not-allowed rounded-xl bg-cyan-700/60 px-4 py-4 text-center font-bold text-white/70 shadow-lg shadow-cyan-600/10"
                   >
                     რეგისტრაცია
-                  </Link>
+                  </button>
                 </div>
               </div>
             </div>

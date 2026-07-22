@@ -66,6 +66,7 @@ const EditGalleryComponent = ({ image: galleryImage }: EditGalleryComponentProps
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (loading) return;
     setLoading(true);
     setError(null);
     setSuccess(false);

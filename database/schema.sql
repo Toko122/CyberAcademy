@@ -102,10 +102,10 @@ DROP TRIGGER IF EXISTS partners_set_updated_at ON public.partners;
 CREATE TRIGGER partners_set_updated_at BEFORE UPDATE ON public.partners
 FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
-CREATE INDEX IF NOT EXISTS courses_created_at_desc_idx ON public.courses (created_at DESC);
-CREATE INDEX IF NOT EXISTS gallery_created_at_desc_idx ON public.gallery (created_at DESC);
-CREATE INDEX IF NOT EXISTS groups_created_at_desc_idx ON public.groups (created_at DESC);
-CREATE INDEX IF NOT EXISTS partners_created_at_desc_idx ON public.partners (created_at DESC);
+CREATE INDEX IF NOT EXISTS courses_created_at_id_desc_idx ON public.courses (created_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS gallery_created_at_id_desc_idx ON public.gallery (created_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS groups_created_at_id_desc_idx ON public.groups (created_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS partners_created_at_id_desc_idx ON public.partners (created_at DESC, id DESC);
 CREATE INDEX IF NOT EXISTS users_role_idx ON public.users (role);
 
 COMMENT ON COLUMN public.users.password IS 'bcrypt or Node.js scrypt hash; never expose through application responses.';

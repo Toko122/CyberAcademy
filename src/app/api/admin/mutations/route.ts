@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { deleteCloudinaryImage, uploadImage } from "@/lib/Cloudinary";
 import {
@@ -13,6 +14,18 @@ import {
 import { AppError, ValidationError, logServerError } from "@/lib/errors";
 
 export const runtime = "nodejs";
+
+const contentPaths = {
+  courses: "/features/courses",
+  gallery: "/features/gallery",
+  groups: "/features/group",
+  partners: "/features/partners",
+} as const;
+
+function revalidateContent(entity: keyof typeof contentPaths, id?: string) {
+  revalidatePath(contentPaths[entity]);
+  if (entity === "courses" && id) revalidatePath(`/features/courses/${id}`);
+}
 
 function errorResponse(error: unknown) {
   logServerError("Admin content mutation failed", error);
@@ -51,6 +64,7 @@ export async function POST(request: Request) {
       const deleted = await removeContent(entity, id);
       if (!deleted.rows[0]) return NextResponse.json({ success: false, message: "Item not found" }, { status: 404 });
       await deleteCloudinaryImage(oldImage);
+      revalidateContent(entity, id);
       return NextResponse.json({ success: true, data: deleted.rows[0] });
     }
 
@@ -92,6 +106,7 @@ export async function POST(request: Request) {
         return NextResponse.json({ success: false, message: "Item not found" }, { status: 404 });
       }
       if (uploadedUrl && oldImage && oldImage !== uploadedUrl) await deleteCloudinaryImage(oldImage);
+      revalidateContent(entity, result.rows[0].id);
       return NextResponse.json({ success: true, data: result.rows[0] });
     } catch (error) {
       if (uploadedUrl) await deleteCloudinaryImage(uploadedUrl);

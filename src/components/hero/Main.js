@@ -11,13 +11,13 @@ import Card from '../../app/features/contact/components/Links'
 const patches = [
   { id: 1, title: 'გუნდი', link: '/features/group', span: 'col-span-1 lg:col-span-4 lg:order-1' },
   { id: 2, title: 'LOGO', link: '/', span: 'col-span-1 lg:col-span-4 order-first lg:order-2', isLogo: true },
-  { id: 3, title: 'პროფესიული კურსები', link: '/features/courses', span: 'col-span-1 lg:col-span-4 lg:order-3' },
+  { id: 3, title: 'პროფესიული კურსები', span: 'col-span-1 lg:col-span-4 lg:order-3', disabled: true },
   { id: 4, title: 'კურსები', link: '/features/courses', span: 'col-span-1 lg:col-span-6 lg:order-4' },
   { id: 5, title: 'ჩვენს შესახებ', link: '/features/courses', span: 'col-span-1 lg:col-span-6 lg:order-5' },
   { id: 6, title: 'პარტნიორები', link: '/features/partners', span: 'col-span-1 lg:col-span-3 lg:order-6' },
   { id: 7, title: 'გალერეა', link: '/features/gallery', span: 'col-span-1 lg:col-span-3 lg:order-7' },
   { id: 8, title: 'კონტაქტი', link: '/features/contact', span: 'col-span-1 lg:col-span-3 lg:order-8' },
-  { id: 9, title: 'კარიერა', link: '/features/courses', span: 'col-span-1 lg:col-span-3 lg:order-9' }, 
+  { id: 9, title: 'კარიერა', span: 'col-span-1 lg:col-span-3 lg:order-9', disabled: true },
 ].map((patch) => patch.id === 5 ? { ...patch, link: '/features/aboutUs' } : patch)
 
 const glassColors = {
@@ -91,18 +91,19 @@ const Main = () => {
         >
           {patches.map((patch) => {
             const isLogoCard = patch.isLogo;
+            const isDisabled = patch.disabled;
 
             const cardContent = (
               <motion.div
                 custom={patch.id}
                 variants={cardVariants}
-                whileHover={{
+                whileHover={isDisabled ? {} : {
                   scale: 1.05,
                   y: isLogoCard ? -5 : -8,
                   backgroundColor: isLogoCard ? "transparent" : "rgba(255, 255, 255, 0.25)",
                   boxShadow: isLogoCard ? "none" : "0 20px 40px rgba(0,0,0,0.4)"
                 }}
-                whileTap={{ scale: 0.98 }}
+                whileTap={isDisabled ? {} : { scale: 0.98 }}
                 style={{
                   backgroundColor: isLogoCard ? 'transparent' : glassColors[patch.id],
                   backdropFilter: isLogoCard ? 'none' : 'blur(16px)',
@@ -112,7 +113,8 @@ const Main = () => {
                 className={`
                   min-h-[120px] lg:min-h-[160px]
                   rounded-[1.5rem] lg:rounded-[2rem] flex items-center justify-center
-                  text-white text-base sm:text-lg lg:text-2xl font-extralight cursor-pointer tracking-wide sm:tracking-widest
+                  text-white text-base sm:text-lg lg:text-2xl font-extralight tracking-wide sm:tracking-widest
+                  ${isDisabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}
                   transition-all duration-500 relative group overflow-hidden px-4 sm:px-6 lg:px-8
                 `}
               >
@@ -140,7 +142,16 @@ const Main = () => {
 
             return (
               <div key={patch.id} className={patch.span}>
-                {patch.link ? (
+                {isDisabled ? (
+                  <button
+                    type="button"
+                    disabled
+                    aria-disabled="true"
+                    className="block h-full w-full cursor-not-allowed text-left"
+                  >
+                    {cardContent}
+                  </button>
+                ) : patch.link ? (
                   <Link href={patch.link} passHref className="block h-full">
                     {cardContent}
                   </Link>

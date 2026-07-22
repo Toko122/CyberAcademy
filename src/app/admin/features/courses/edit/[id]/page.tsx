@@ -6,7 +6,7 @@ import { getCourse } from "@/lib/repositories/content";
 export default async function EditCoursePage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   if (!(await requireAdmin())) redirect("/admin/login");
-  const courseDoc = await getCourse(id).catch(() => null);
+  const courseDoc = await getCourse(id);
   if (!courseDoc) notFound();
   return <EditCourseComponent course={{
     id: courseDoc.id, title: courseDoc.title, description: courseDoc.description,

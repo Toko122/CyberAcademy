@@ -11,6 +11,7 @@ const LoginComponent = () => {
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
     setError(null);
     setLoading(true);
 
@@ -34,7 +35,7 @@ const LoginComponent = () => {
     } finally {
       setLoading(false);
     }
-  }, [email, password, router]);
+  }, [email, loading, password, router]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-3 sm:px-4 py-8">
