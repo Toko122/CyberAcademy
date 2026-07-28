@@ -5,13 +5,15 @@ import { Clock, CreditCard, CheckCircle2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import { formatPrice, type PriceValue } from "@/lib/utils";
 
 interface Course {
   id: string;
   title: string;
   description: string;
   image: string;
-  price: string;
+  total_price: PriceValue;
+  monthly_price: PriceValue;
   duration: string;
   category?: string;
 }
@@ -70,6 +72,8 @@ export default function CourseDetails() {
   const titleParts = course.title.split(" ");
   const firstWord = titleParts[0];
   const restOfTitle = titleParts.slice(1).join(" ");
+  const totalPrice = formatPrice(course.total_price);
+  const monthlyPrice = formatPrice(course.monthly_price);
 
   return (
     <main className="min-h-screen bg-[#0F172A] pt-16 sm:pt-20 lg:pt-24 pb-16 sm:pb-20 px-4 md:px-6">
@@ -111,9 +115,17 @@ export default function CourseDetails() {
                   <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center border-b border-white/5 pb-4">
                     <div className="flex items-center gap-3 text-gray-400">
                       <CreditCard size={20} className="text-cyan-500" />
-                      <span>სრული ღირებულება</span>
+                      <span>თვიური გადასახადი</span>
                     </div>
-                    <span className="text-2xl font-black text-cyan-400">{course.price} ₾</span>
+                    <span className="text-2xl font-black text-cyan-400">{monthlyPrice ? `${monthlyPrice} ₾` : "—"}</span>
+                  </div>
+
+                  <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center border-b border-white/5 pb-4">
+                    <div className="flex items-center gap-3 text-gray-400">
+                      <CreditCard size={20} className="text-cyan-500" />
+                      <span>მთლიანი ღირებულება</span>
+                    </div>
+                    <span className="text-xl font-black text-white">{totalPrice ? `${totalPrice} ₾` : "—"}</span>
                   </div>
 
                   <button

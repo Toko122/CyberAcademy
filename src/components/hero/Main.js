@@ -124,12 +124,14 @@ const Main = () => {
                 
                 <div className="relative z-10 flex items-center justify-center w-full h-full">
                   {isLogoCard ? (
-                    <Image 
-                      src="/cyberAcademy.png" 
-                      alt="Cyber Academy Logo" 
-                      width={220}
-                      height={120}
-                      className="h-20 lg:h-32 w-auto object-contain invert brightness-[10%] contrast-100 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]"
+                    <Image
+                      src="/cyberAcademy.png"
+                      alt="Cyber Academy"
+                      width={495}
+                      height={504}
+                      priority
+                      sizes="(min-width: 1024px) 128px, 80px"
+                      className="h-20 w-auto max-w-full object-contain brightness-0 invert drop-shadow-[0_0_15px_rgba(255,255,255,0.3)] lg:h-32"
                     />
                   ) : (
                     <span className="drop-shadow-2xl text-center leading-tight uppercase select-none break-words max-w-full">

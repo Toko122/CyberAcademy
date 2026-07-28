@@ -21,7 +21,8 @@ const CreateCourseComponent = () => {
   const [form, setForm] = useState({
     title: "",
     description: "",
-    price: "",
+    totalPrice: "",
+    monthlyPrice: "",
     duration: "",
     category: "პროგრამირება" as Category,
   });
@@ -69,7 +70,8 @@ const CreateCourseComponent = () => {
       formData.append("action", "create");
       formData.append("title", form.title);
       formData.append("description", form.description);
-      formData.append("price", form.price);
+      formData.append("totalPrice", form.totalPrice);
+      formData.append("monthlyPrice", form.monthlyPrice);
       formData.append("duration", form.duration);
       formData.append("category", form.category);
 
@@ -95,7 +97,8 @@ const CreateCourseComponent = () => {
       setForm({
         title: "",
         description: "",
-        price: "",
+        totalPrice: "",
+        monthlyPrice: "",
         duration: "",
         category: "პროგრამირება",
       });
@@ -210,20 +213,41 @@ const CreateCourseComponent = () => {
 
             <motion.div variants={itemVariants} className="space-y-2">
               <label className="flex items-center text-sm font-medium text-gray-400 ml-1">
-                <Tag className="w-4 h-4 mr-2 text-cyan-500" /> ღირებულება
+                <Tag className="w-4 h-4 mr-2 text-cyan-500" /> მთლიანი ღირებულება
               </label>
               <input
-                name="price"
+                name="totalPrice"
                 required
-                value={form.price}
+                value={form.totalPrice}
                 onChange={handleChange}
-                type="text"
-                placeholder="მაგ: 2700 ₾"
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                placeholder="მაგ: 900"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
               />
             </motion.div>
 
             <motion.div variants={itemVariants} className="space-y-2">
+              <label className="flex items-center text-sm font-medium text-gray-400 ml-1">
+                <Tag className="w-4 h-4 mr-2 text-cyan-500" /> თვიური ღირებულება
+              </label>
+              <input
+                name="monthlyPrice"
+                required
+                value={form.monthlyPrice}
+                onChange={handleChange}
+                type="number"
+                min="0"
+                step="0.01"
+                inputMode="decimal"
+                placeholder="მაგ: 150"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
+              />
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="space-y-2 md:col-span-2">
               <label className="flex items-center text-sm font-medium text-gray-400 ml-1">
                 <PlusCircle className="w-4 h-4 mr-2 text-cyan-500" /> კატეგორია
               </label>

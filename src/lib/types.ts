@@ -8,6 +8,8 @@ export interface CourseRecord {
   description: string;
   image: string;
   price: number | string | null;
+  total_price: number | string | null;
+  monthly_price: number | string | null;
   duration: string | null;
   category?: string | null;
   created_at?: string;

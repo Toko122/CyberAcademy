@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import styled from 'styled-components';
 import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
+import { BsTiktok } from 'react-icons/bs';
 
 const Card: React.FC = () => {
   return (
@@ -21,8 +22,8 @@ const Card: React.FC = () => {
 
           <li className="iso-pro">
             <span /><span /><span />
-            <Link href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="social_link">
-              <FaTwitter />
+            <Link href="https://tiktok.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter" className="social_link">
+              <BsTiktok />
             </Link>
             <div className="tooltip">Twitter</div>
           </li>

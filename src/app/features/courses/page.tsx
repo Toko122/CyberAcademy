@@ -12,7 +12,8 @@ const CoursesPage = async () => {
     title: course.title,
     description: course.description,
     image: course.image,
-    price: String(course.price ?? ""),
+    totalPrice: course.total_price,
+    monthlyPrice: course.monthly_price,
     duration: course.duration ?? "",
     category: course.category ?? "",
   }));

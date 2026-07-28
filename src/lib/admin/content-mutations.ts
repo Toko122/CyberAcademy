@@ -13,7 +13,15 @@ export const CONTENT_ENTITIES = ["courses", "gallery", "groups", "partners"] as 
 export type ContentEntity = typeof CONTENT_ENTITIES[number];
 export type ContentAction = "create" | "update" | "delete";
 
-type CourseInput = { entity: "courses"; title: string; description: string; price: number; duration: string; category: string };
+type CourseInput = {
+  entity: "courses";
+  title: string;
+  description: string;
+  totalPrice: number;
+  monthlyPrice: number;
+  duration: string;
+  category: string;
+};
 type GalleryInput = { entity: "gallery"; title: string; description: string; category: string };
 type GroupInput = { entity: "groups"; name: string; description: string; position: string };
 type PartnerInput = { entity: "partners"; name: string; color: string };
@@ -30,18 +38,28 @@ function text(form: FormData, key: string, max: number, required = false) {
   return value;
 }
 
+function price(form: FormData, key: string, label: string) {
+  const value = text(form, key, 32, true).replace(",", ".");
+  if (!/^\d{1,10}(?:\.\d{1,2})?$/.test(value)) {
+    throw new ValidationError(`${label} უნდა იყოს არაუარყოფითი რიცხვი, მაქსიმუმ 2 ათწილადი ნიშნით`);
+  }
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0 || parsed > 9_999_999_999.99) {
+    throw new ValidationError(`${label} არასწორია`);
+  }
+  return parsed;
+}
+
 export function parseContentInput(form: FormData, entity: ContentEntity): ContentInput {
   if (entity === "courses") {
-    const priceText = text(form, "price", 32, true).replace(/[^0-9.,-]/g, "").replace(",", ".");
-    const price = Number(priceText);
     const category = text(form, "category", 100, true);
-    if (!Number.isFinite(price) || price < 0) throw new ValidationError("price must be a non-negative number");
-    if (!COURSE_CATEGORIES.has(category)) throw new ValidationError("category is invalid");
+    if (!COURSE_CATEGORIES.has(category)) throw new ValidationError("კურსის კატეგორია არასწორია");
     return {
       entity,
       title: text(form, "title", 200, true),
       description: text(form, "description", 10_000),
-      price,
+      totalPrice: price(form, "totalPrice", "მთლიანი ღირებულება"),
+      monthlyPrice: price(form, "monthlyPrice", "თვიური ღირებულება"),
       duration: text(form, "duration", 100, true),
       category,
     };
@@ -93,12 +111,18 @@ export async function removeContent(entity: ContentEntity, id: string) {
 
 export async function saveContent(input: ContentInput, action: Exclude<ContentAction, "delete">, id: string, imageUrl: string) {
   if (input.entity === "courses") {
-    const values = [input.title, input.description, imageUrl, input.price, input.duration, input.category];
+    const values = [
+      input.title, input.description, imageUrl, input.totalPrice, input.totalPrice,
+      input.monthlyPrice, input.duration, input.category,
+    ];
     return action === "create"
-      ? query<{ id: string }>(`INSERT INTO public.courses (title, description, image, price, duration, category)
-          VALUES ($1,$2,$3,$4,$5,$6) RETURNING id`, values)
-      : query<{ id: string }>(`UPDATE public.courses SET title=$1, description=$2, image=$3, price=$4, duration=$5, category=$6
-          WHERE id=$7 RETURNING id`, [...values, id]);
+      ? query<{ id: string }>(`INSERT INTO public.courses
+          (title, description, image, price, total_price, monthly_price, duration, category)
+          VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`, values)
+      : query<{ id: string }>(`UPDATE public.courses
+          SET title=$1, description=$2, image=$3, price=$4, total_price=$5,
+              monthly_price=$6, duration=$7, category=$8
+          WHERE id=$9 RETURNING id`, [...values, id]);
   }
 
   if (input.entity === "gallery") {

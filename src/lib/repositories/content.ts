@@ -3,7 +3,10 @@ import type { CourseRecord, GalleryRecord, GroupRecord, PartnerRecord } from "@/
 
 export async function listCourses(limit = 50) {
   const result = await query<CourseRecord>(
-    `SELECT id, title, description, image, price::text AS price, duration, category, created_at
+    `SELECT id, title, description, image, price::text AS price,
+            COALESCE(total_price, price)::text AS total_price,
+            monthly_price::text AS monthly_price,
+            duration, category, created_at
      FROM public.courses ORDER BY created_at DESC, id DESC LIMIT $1`, [limit]
   );
   return result.rows;
@@ -11,7 +14,10 @@ export async function listCourses(limit = 50) {
 
 export async function getCourse(id: string) {
   const result = await query<CourseRecord>(
-    `SELECT id, title, description, image, price::text AS price, duration, category, created_at
+    `SELECT id, title, description, image, price::text AS price,
+            COALESCE(total_price, price)::text AS total_price,
+            monthly_price::text AS monthly_price,
+            duration, category, created_at
      FROM public.courses WHERE id = $1 LIMIT 1`, [id]
   );
   return result.rows[0] ?? null;
