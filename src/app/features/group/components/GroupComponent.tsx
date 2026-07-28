@@ -79,14 +79,15 @@ function GroupCard({
         transition,
         zIndex: isDragging ? 30 : undefined,
       }}
-      className={`group relative flex min-h-[420px] w-full max-w-80 touch-manipulation flex-col items-center justify-center overflow-hidden rounded-[30px] border bg-gray-900/40 px-6 py-10 text-center backdrop-blur-2xl transition-[border-color,box-shadow,opacity] ${
+      className={`group relative flex min-h-[430px] w-full max-w-[22rem] touch-manipulation flex-col items-center overflow-hidden rounded-[2rem] border bg-gradient-to-b from-slate-900/80 to-slate-950/70 px-6 py-9 text-center backdrop-blur-2xl transition-[border-color,box-shadow,transform,opacity] duration-300 sm:px-8 ${
         isDragging
           ? "border-cyan-300/70 opacity-90 shadow-[0_28px_70px_rgba(6,182,212,0.28)]"
-          : "border-white/20 shadow-2xl"
+          : "border-white/10 shadow-[0_24px_70px_rgba(2,6,23,0.5)] hover:-translate-y-1 hover:border-cyan-400/30 hover:shadow-[0_28px_80px_rgba(6,182,212,0.14)]"
       }`}
     >
-      <div className="pointer-events-none absolute left-[-20%] top-[-20%] h-full w-full animate-pulse bg-cyan-600/20 blur-[100px]" />
-      <div className="pointer-events-none absolute bottom-[-20%] right-[-20%] h-full w-full animate-pulse bg-blue-600/20 blur-[100px]" />
+      <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/70 to-transparent" />
+      <div className="pointer-events-none absolute left-[-20%] top-[-20%] h-full w-full bg-cyan-600/15 blur-[100px]" />
+      <div className="pointer-events-none absolute bottom-[-20%] right-[-20%] h-full w-full bg-blue-600/15 blur-[100px]" />
 
       {isAdmin && (
         <button
@@ -101,8 +102,8 @@ function GroupCard({
         </button>
       )}
 
-      <div className="relative z-10 h-40 w-40 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 p-1 shadow-2xl">
-        <div className="relative h-full w-full overflow-hidden rounded-full border-4 border-gray-900">
+      <div className="relative z-10 h-36 w-36 shrink-0 rounded-full bg-gradient-to-tr from-cyan-400 via-cyan-500 to-blue-500 p-1 shadow-[0_16px_45px_rgba(6,182,212,0.25)] sm:h-40 sm:w-40">
+        <div className="relative h-full w-full overflow-hidden rounded-full border-4 border-slate-950">
           <Image
             src={member.image}
             alt={member.name}
@@ -113,18 +114,22 @@ function GroupCard({
         </div>
       </div>
 
-      <div className="relative z-10 mt-6 space-y-2">
-        <h3 className="text-3xl font-black tracking-tight text-white">{member.name}</h3>
-        <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-400">
-          {member.memberType === "teacher" ? "Teacher" : "Administration"}
+      <div className="relative z-10 mt-6 flex w-full min-w-0 flex-col items-center">
+        <h3 className="max-w-full text-balance text-2xl font-black leading-tight tracking-tight text-white sm:text-3xl">
+          {member.name}
+        </h3>
+        <p className="mt-2.5 max-w-full text-center text-sm font-black leading-relaxed tracking-tight text-cyan-300 sm:text-base">
+          {member.memberType === "teacher" ? "მასწავლებელი" : "ადმინისტრაცია"}
         </p>
         {member.description && (
-          <p className="pt-4 text-sm italic text-gray-400">&quot;{member.description}&quot;</p>
+          <p className="mt-4 line-clamp-3 max-w-full text-sm font-medium leading-relaxed text-slate-400">
+            &quot;{member.description}&quot;
+          </p>
         )}
       </div>
 
       {isAdmin && (
-        <div className="relative z-20 mt-7 grid w-full grid-cols-2 gap-2">
+        <div className="relative z-20 mt-auto grid w-full grid-cols-2 gap-2 pt-7">
           <button
             type="button"
             onClick={() => router.push(`/admin/features/group/edit/${member.id}`)}
@@ -146,12 +151,14 @@ function GroupCard({
 }
 
 function MemberSection({
+  id,
   title,
   members,
   isAdmin,
   saving,
   onReorder,
 }: {
+  id: string;
   title: string;
   members: TeamMember[];
   isAdmin: boolean;
@@ -173,13 +180,16 @@ function MemberSection({
   };
 
   return (
-    <section className="space-y-8" aria-labelledby={`${title.toLowerCase()}-heading`}>
-      <div className="flex items-center gap-4">
-        <h2 id={`${title.toLowerCase()}-heading`} className="text-2xl font-black text-white sm:text-4xl">
+    <section className="space-y-9 sm:space-y-10" aria-labelledby={`${id}-heading`}>
+      <div className="flex flex-col items-center">
+        <h2
+          id={`${id}-heading`}
+          className="text-center text-4xl font-black leading-[1.1] tracking-tight text-white md:text-6xl"
+        >
           {title}
         </h2>
-        <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/50 to-transparent" />
-        {isAdmin && saving && <span className="text-xs font-semibold text-cyan-300">Saving order…</span>}
+        <div className="mt-4 h-px w-20 bg-gradient-to-r from-transparent via-cyan-400 to-transparent sm:w-28" />
+        {isAdmin && saving && <span className="mt-3 text-xs font-semibold text-cyan-300">Saving order…</span>}
       </div>
 
       {members.length ? (
@@ -195,7 +205,7 @@ function MemberSection({
           }}
         >
           <SortableContext items={members.map((member) => member.id)} strategy={rectSortingStrategy}>
-            <div className="grid grid-cols-1 justify-items-center gap-8 overflow-x-clip md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 justify-items-center gap-8 overflow-x-clip md:grid-cols-2 xl:grid-cols-3">
               {members.map((member) => (
                 <GroupCard key={member.id} member={member} isAdmin={isAdmin} saving={saving} />
               ))}
@@ -261,14 +271,16 @@ export default function GroupComponent({
   return (
     <div className="mx-auto max-w-7xl space-y-20">
       <MemberSection
-        title="Administration"
+        id="administration"
+        title="ადმინისტრაცია"
         members={administration}
         isAdmin={isAdmin}
         saving={savingType === "administration"}
         onReorder={persistOrder}
       />
       <MemberSection
-        title="Teachers"
+        id="teachers"
+        title="მასწავლებლები"
         members={teachers}
         isAdmin={isAdmin}
         saving={savingType === "teacher"}
