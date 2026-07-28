@@ -12,6 +12,9 @@ export interface CourseRecord {
   monthly_price: number | string | null;
   duration: string | null;
   category?: string | null;
+  teacher_id: string | null;
+  teacher_name: string | null;
+  teacher_image: string | null;
   created_at?: string;
 }
 
@@ -29,9 +32,12 @@ export interface GroupRecord {
   name: string;
   description: string | null;
   image: string;
-  position: string | null;
+  member_type: MemberType;
+  sort_order: number;
   created_at?: string;
 }
+
+export type MemberType = "administration" | "teacher";
 
 export interface PartnerRecord {
   id: string;

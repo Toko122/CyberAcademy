@@ -1,5 +1,6 @@
-import { query } from "@/lib/db";
+import { query, withTransaction } from "@/lib/db";
 import { ValidationError } from "@/lib/errors";
+import type { MemberType } from "@/lib/types";
 
 export const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -11,7 +12,7 @@ const PARTNER_COLORS = new Set([
 
 export const CONTENT_ENTITIES = ["courses", "gallery", "groups", "partners"] as const;
 export type ContentEntity = typeof CONTENT_ENTITIES[number];
-export type ContentAction = "create" | "update" | "delete";
+export type ContentAction = "create" | "update" | "delete" | "reorder";
 
 type CourseInput = {
   entity: "courses";
@@ -21,9 +22,10 @@ type CourseInput = {
   monthlyPrice: number;
   duration: string;
   category: string;
+  teacherId: string | null;
 };
 type GalleryInput = { entity: "gallery"; title: string; description: string; category: string };
-type GroupInput = { entity: "groups"; name: string; description: string; position: string };
+type GroupInput = { entity: "groups"; name: string; description: string; memberType: MemberType };
 type PartnerInput = { entity: "partners"; name: string; color: string };
 export type ContentInput = CourseInput | GalleryInput | GroupInput | PartnerInput;
 
@@ -50,6 +52,20 @@ function price(form: FormData, key: string, label: string) {
   return parsed;
 }
 
+function memberType(value: string): MemberType {
+  if (value !== "administration" && value !== "teacher") {
+    throw new ValidationError("memberType must be administration or teacher");
+  }
+  return value;
+}
+
+function optionalUuid(form: FormData, key: string) {
+  const value = text(form, key, 36);
+  if (!value) return null;
+  if (!UUID_PATTERN.test(value)) throw new ValidationError(`${key} is invalid`);
+  return value;
+}
+
 export function parseContentInput(form: FormData, entity: ContentEntity): ContentInput {
   if (entity === "courses") {
     const category = text(form, "category", 100, true);
@@ -62,6 +78,7 @@ export function parseContentInput(form: FormData, entity: ContentEntity): Conten
       monthlyPrice: price(form, "monthlyPrice", "თვიური ღირებულება"),
       duration: text(form, "duration", 100, true),
       category,
+      teacherId: optionalUuid(form, "teacherId"),
     };
   }
 
@@ -79,7 +96,7 @@ export function parseContentInput(form: FormData, entity: ContentEntity): Conten
       entity,
       name: text(form, "name", 200, true),
       description: text(form, "description", 10_000),
-      position: text(form, "position", 200, true),
+      memberType: memberType(text(form, "memberType", 32, true)),
     };
   }
 
@@ -100,6 +117,17 @@ export async function currentImage(entity: ContentEntity, id: string): Promise<s
 }
 
 export async function removeContent(entity: ContentEntity, id: string) {
+  if (entity === "groups") {
+    return withTransaction(async (client) => {
+      const deleted = await client.query<{ id: string; member_type: MemberType }>(
+        "DELETE FROM public.groups WHERE id = $1 RETURNING id, member_type", [id]
+      );
+      if (deleted.rows[0]) {
+        await normalizeGroupOrder(client, [deleted.rows[0].member_type]);
+      }
+      return deleted;
+    });
+  }
   const statements: Record<ContentEntity, string> = {
     courses: "DELETE FROM public.courses WHERE id = $1 RETURNING id",
     gallery: "DELETE FROM public.gallery WHERE id = $1 RETURNING id",
@@ -109,20 +137,28 @@ export async function removeContent(entity: ContentEntity, id: string) {
   return query<{ id: string }>(statements[entity], [id]);
 }
 
-export async function saveContent(input: ContentInput, action: Exclude<ContentAction, "delete">, id: string, imageUrl: string) {
+export async function saveContent(input: ContentInput, action: "create" | "update", id: string, imageUrl: string) {
   if (input.entity === "courses") {
     const values = [
       input.title, input.description, imageUrl, input.totalPrice, input.totalPrice,
-      input.monthlyPrice, input.duration, input.category,
+      input.monthlyPrice, input.duration, input.category, input.teacherId,
     ];
-    return action === "create"
-      ? query<{ id: string }>(`INSERT INTO public.courses
-          (title, description, image, price, total_price, monthly_price, duration, category)
-          VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`, values)
-      : query<{ id: string }>(`UPDATE public.courses
+    return withTransaction(async (client) => {
+      if (input.teacherId) {
+        const teacher = await client.query(
+          "SELECT 1 FROM public.groups WHERE id = $1 AND member_type = 'teacher'", [input.teacherId]
+        );
+        if (!teacher.rows[0]) throw new ValidationError("Selected teacher is invalid");
+      }
+      return action === "create"
+        ? client.query<{ id: string }>(`INSERT INTO public.courses
+          (title, description, image, price, total_price, monthly_price, duration, category, teacher_id)
+          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`, values)
+        : client.query<{ id: string }>(`UPDATE public.courses
           SET title=$1, description=$2, image=$3, price=$4, total_price=$5,
-              monthly_price=$6, duration=$7, category=$8
-          WHERE id=$9 RETURNING id`, [...values, id]);
+              monthly_price=$6, duration=$7, category=$8, teacher_id=$9
+          WHERE id=$10 RETURNING id`, [...values, id]);
+    });
   }
 
   if (input.entity === "gallery") {
@@ -133,14 +169,82 @@ export async function saveContent(input: ContentInput, action: Exclude<ContentAc
   }
 
   if (input.entity === "groups") {
-    const values = [input.name, input.description, imageUrl, input.position];
-    return action === "create"
-      ? query<{ id: string }>("INSERT INTO public.groups (name, description, image, position) VALUES ($1,$2,$3,$4) RETURNING id", values)
-      : query<{ id: string }>("UPDATE public.groups SET name=$1, description=$2, image=$3, position=$4 WHERE id=$5 RETURNING id", [...values, id]);
+    return withTransaction(async (client) => {
+      if (action === "create") {
+        return client.query<{ id: string }>(
+          `INSERT INTO public.groups (name, description, image, member_type, sort_order)
+           SELECT $1, $2, $3, $4, COALESCE(MAX(sort_order) + 1, 0)
+           FROM public.groups WHERE member_type = $4 RETURNING id`,
+          [input.name, input.description, imageUrl, input.memberType]
+        );
+      }
+      const existing = await client.query<{ member_type: MemberType }>(
+        "SELECT member_type FROM public.groups WHERE id = $1 FOR UPDATE", [id]
+      );
+      if (!existing.rows[0]) return client.query<{ id: string }>("SELECT NULL::uuid AS id WHERE false");
+      const changedType = existing.rows[0].member_type !== input.memberType;
+      const result = changedType
+        ? await client.query<{ id: string }>(
+            `UPDATE public.groups SET name=$1, description=$2, image=$3, member_type=$4,
+             sort_order=(SELECT COALESCE(MAX(sort_order) + 1, 0) FROM public.groups WHERE member_type=$4)
+             WHERE id=$5 RETURNING id`,
+            [input.name, input.description, imageUrl, input.memberType, id]
+          )
+        : await client.query<{ id: string }>(
+            "UPDATE public.groups SET name=$1, description=$2, image=$3 WHERE id=$4 RETURNING id",
+            [input.name, input.description, imageUrl, id]
+          );
+      if (changedType) await normalizeGroupOrder(client, [existing.rows[0].member_type, input.memberType]);
+      return result;
+    });
   }
 
   const values = [input.name, imageUrl, input.color];
   return action === "create"
     ? query<{ id: string }>("INSERT INTO public.partners (name, logo, color) VALUES ($1,$2,$3) RETURNING id", values)
     : query<{ id: string }>("UPDATE public.partners SET name=$1, logo=$2, color=$3 WHERE id=$4 RETURNING id", [...values, id]);
+}
+
+type TransactionClient = Parameters<Parameters<typeof withTransaction>[0]>[0];
+
+async function normalizeGroupOrder(client: TransactionClient, types: MemberType[]) {
+  const uniqueTypes = [...new Set(types)];
+  await client.query("SET CONSTRAINTS groups_member_type_sort_order_key DEFERRED");
+  await client.query(
+    `WITH ordered AS (
+       SELECT id, row_number() OVER (PARTITION BY member_type ORDER BY sort_order, id) - 1 AS next_order
+       FROM public.groups WHERE member_type = ANY($1::text[])
+     )
+     UPDATE public.groups AS member SET sort_order = ordered.next_order
+     FROM ordered WHERE member.id = ordered.id`,
+    [uniqueTypes]
+  );
+}
+
+export async function reorderGroups(memberTypeValue: MemberType, orderedIds: string[]) {
+  if (!orderedIds.length || orderedIds.some((id) => !UUID_PATTERN.test(id))) {
+    throw new ValidationError("Invalid reorder payload");
+  }
+  if (new Set(orderedIds).size !== orderedIds.length) {
+    throw new ValidationError("Duplicate member ids are not allowed");
+  }
+  return withTransaction(async (client) => {
+    await client.query("SET CONSTRAINTS groups_member_type_sort_order_key DEFERRED");
+    const current = await client.query<{ id: string }>(
+      `SELECT id FROM public.groups WHERE member_type = $1 ORDER BY sort_order, id FOR UPDATE`,
+      [memberTypeValue]
+    );
+    const currentIds = current.rows.map((row) => row.id);
+    if (currentIds.length !== orderedIds.length || currentIds.some((id) => !orderedIds.includes(id))) {
+      throw new ValidationError("Reorder list must contain every member in the selected group");
+    }
+    await client.query(
+      `UPDATE public.groups AS member
+       SET sort_order = ordering.sort_order - 1
+       FROM unnest($1::uuid[]) WITH ORDINALITY AS ordering(id, sort_order)
+       WHERE member.id = ordering.id AND member.member_type = $2`,
+      [orderedIds, memberTypeValue]
+    );
+    return { memberType: memberTypeValue, orderedIds };
+  });
 }

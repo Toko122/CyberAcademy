@@ -10,6 +10,6 @@ export default async function EditGroupPage({ params }: { params: Promise<{ id: 
   if (!member) notFound();
   return <EditGroupComponent member={{
     id: member.id, name: member.name, description: member.description ?? "",
-    image: member.image, position: member.position ?? "",
+    image: member.image, memberType: member.member_type,
   }} />;
 }

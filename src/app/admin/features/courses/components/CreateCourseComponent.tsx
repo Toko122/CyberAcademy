@@ -16,8 +16,9 @@ import Image from "next/image";
 import { ChangeEvent, FormEvent, useState } from "react";
 
 type Category = "პროგრამირება" | "დიზაინი" | "მარკეტინგი" | "IT სპეციალისტი";
+type TeacherOption = { id: string; name: string; image: string };
 
-const CreateCourseComponent = () => {
+const CreateCourseComponent = ({ teachers }: { teachers: TeacherOption[] }) => {
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -25,6 +26,7 @@ const CreateCourseComponent = () => {
     monthlyPrice: "",
     duration: "",
     category: "პროგრამირება" as Category,
+    teacherId: "",
   });
 
   const [preview, setPreview] = useState<string | null>(null);
@@ -33,7 +35,7 @@ const CreateCourseComponent = () => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (error) setError(null);
@@ -74,6 +76,7 @@ const CreateCourseComponent = () => {
       formData.append("monthlyPrice", form.monthlyPrice);
       formData.append("duration", form.duration);
       formData.append("category", form.category);
+      formData.append("teacherId", form.teacherId);
 
       if (file) {
         formData.append("file", file);
@@ -101,6 +104,7 @@ const CreateCourseComponent = () => {
         monthlyPrice: "",
         duration: "",
         category: "პროგრამირება",
+        teacherId: "",
       });
 
       setTimeout(() => setSuccess(false), 3000);
@@ -260,6 +264,28 @@ const CreateCourseComponent = () => {
                 <option className="text-black" value="დიზაინი">დიზაინი</option>
                 <option className="text-black" value="მარკეტინგი">მარკეტინგი</option>
                 <option className="text-black" value="IT სპეციალისტი">IT სპეციალისტი</option>
+              </select>
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="space-y-2 md:col-span-2">
+              <label className="flex items-center text-sm font-medium text-gray-400 ml-1">
+                Select Teacher
+              </label>
+              <select
+                name="teacherId"
+                value={form.teacherId}
+                onChange={handleChange}
+                disabled={teachers.length === 0}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white/70 outline-none focus:border-cyan-500/50 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option className="text-black" value="">
+                  {teachers.length ? "No teacher selected" : "No teachers available"}
+                </option>
+                {teachers.map((teacher) => (
+                  <option className="text-black" key={teacher.id} value={teacher.id}>
+                    {teacher.name}
+                  </option>
+                ))}
               </select>
             </motion.div>
           </div>

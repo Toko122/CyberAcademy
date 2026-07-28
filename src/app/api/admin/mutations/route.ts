@@ -7,11 +7,13 @@ import {
   isContentEntity,
   parseContentInput,
   removeContent,
+  reorderGroups,
   saveContent,
   UUID_PATTERN,
   type ContentAction,
 } from "@/lib/admin/content-mutations";
 import { AppError, ValidationError, logServerError } from "@/lib/errors";
+import type { MemberType } from "@/lib/types";
 
 export const runtime = "nodejs";
 
@@ -55,6 +57,18 @@ export async function POST(request: Request) {
       const entity = String(body.entity ?? "");
       const action = String(body.action ?? "") as ContentAction;
       const id = String(body.id ?? "");
+      if (entity === "groups" && action === "reorder") {
+        const memberType = String(body.memberType ?? "") as MemberType;
+        const orderedIds = Array.isArray(body.orderedIds)
+          ? body.orderedIds.map((value) => String(value))
+          : [];
+        if (memberType !== "administration" && memberType !== "teacher") {
+          throw new ValidationError("Invalid member type");
+        }
+        const data = await reorderGroups(memberType, orderedIds);
+        revalidateContent("groups");
+        return NextResponse.json({ success: true, data });
+      }
       if (!isContentEntity(entity) || action !== "delete" || !UUID_PATTERN.test(id)) {
         throw new ValidationError("Invalid mutation payload");
       }

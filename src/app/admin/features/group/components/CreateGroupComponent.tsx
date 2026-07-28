@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload,
   PlusCircle,
-  Tag,
+  Users,
   AlignLeft,
   Loader2,
   AlertCircle,
@@ -18,7 +18,7 @@ const CreateGroupComponent = () => {
   const [form, setForm] = useState({
     name: "",
     description: "",
-    position: "",
+    memberType: "administration",
   });
 
   const [preview, setPreview] = useState<string | null>(null);
@@ -62,7 +62,7 @@ const CreateGroupComponent = () => {
       formData.append("action", "create");
       formData.append("name", form.name);
       formData.append("description", form.description);
-      formData.append("position", form.position);
+      formData.append("memberType", form.memberType);
 
       if (file) {
         formData.append("file", file);
@@ -83,7 +83,7 @@ const CreateGroupComponent = () => {
       setSuccess(true);
       setPreview(null);
       setFile(null);
-      setForm({ name: "", description: "", position: "" });
+      setForm({ name: "", description: "", memberType: "administration" });
 
       setTimeout(() => setSuccess(false), 3000);
     } catch (err: unknown) {
@@ -202,17 +202,18 @@ const CreateGroupComponent = () => {
 
             <motion.div variants={itemVariants} className="space-y-2">
               <label className="flex items-center text-sm font-medium text-gray-400 ml-1">
-                <Tag className="w-4 h-4 mr-2 text-cyan-500" /> პოზიცია
+                <Users className="w-4 h-4 mr-2 text-cyan-500" /> Member type
               </label>
-              <input
-                name="position"
+              <select
+                name="memberType"
                 required
-                value={form.position}
+                value={form.memberType}
                 onChange={handleChange}
-                type="text"
-                placeholder="მაგ: დირექტორი / ლექტორი"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
-              />
+              >
+                <option className="text-black" value="administration">Administration</option>
+                <option className="text-black" value="teacher">Teacher</option>
+              </select>
             </motion.div>
           </div>
 

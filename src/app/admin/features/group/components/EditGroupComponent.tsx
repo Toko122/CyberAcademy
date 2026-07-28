@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload,
   PlusCircle,
-  Tag,
+  Users,
   AlignLeft,
   Loader2,
   AlertCircle,
@@ -21,7 +21,7 @@ interface EditGroupComponentProps {
     name: string;
     description: string;
     image: string;
-    position: string;
+    memberType: "administration" | "teacher";
   };
 }
 
@@ -30,7 +30,7 @@ const EditGroupComponent = ({ member }: EditGroupComponentProps) => {
   const [form, setForm] = useState({
     name: member.name || "",
     description: member.description || "",
-    position: member.position || "",
+    memberType: member.memberType,
   });
 
   const [preview, setPreview] = useState<string | null>(member.image || null);
@@ -75,7 +75,7 @@ const EditGroupComponent = ({ member }: EditGroupComponentProps) => {
       formData.append("id", member.id);
       formData.append("name", form.name);
       formData.append("description", form.description);
-      formData.append("position", form.position);
+      formData.append("memberType", form.memberType);
       formData.append("existingImage", member.image || "");
 
       if (file) {
@@ -215,17 +215,18 @@ const EditGroupComponent = ({ member }: EditGroupComponentProps) => {
 
             <motion.div variants={itemVariants} className="space-y-2">
               <label className="flex items-center text-sm font-medium text-gray-400 ml-1">
-                <Tag className="w-4 h-4 mr-2 text-cyan-500" /> პოზიცია
+                <Users className="w-4 h-4 mr-2 text-cyan-500" /> Member type
               </label>
-              <input
-                name="position"
+              <select
+                name="memberType"
                 required
-                value={form.position}
+                value={form.memberType}
                 onChange={handleChange}
-                type="text"
-                placeholder="მაგ: დირექტორი / ლექტორი"
                 className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20 transition-all"
-              />
+              >
+                <option className="text-black" value="administration">Administration</option>
+                <option className="text-black" value="teacher">Teacher</option>
+              </select>
             </motion.div>
           </div>
 

@@ -18,6 +18,11 @@ interface Course {
   monthlyPrice: PriceValue;
   duration: string;
   category?: string;
+  teacher: {
+    id: string;
+    name: string;
+    image: string | null;
+  } | null;
 }
 
 const CourseCover = ({ image, title }: { image: string; title: string }) => {
@@ -45,7 +50,7 @@ const CourseCover = ({ image, title }: { image: string; title: string }) => {
 };
 
 const CourseCard = memo(({
-  id, title, description, image, totalPrice, monthlyPrice, duration, category, isAdmin = false,
+  id, title, description, image, totalPrice, monthlyPrice, duration, category, teacher, isAdmin = false,
 }: Course & { isAdmin?: boolean }) => {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -100,6 +105,26 @@ const CourseCard = memo(({
           <p className="mt-3 line-clamp-3 text-sm leading-6 text-slate-400">
             {description || "კურსის აღწერა მალე დაემატება."}
           </p>
+
+          {teacher && (
+            <div className="mt-5 flex items-center gap-3 rounded-2xl border border-cyan-400/15 bg-cyan-400/5 p-3">
+              {teacher.image ? (
+                <Image
+                  src={teacher.image}
+                  alt={teacher.name}
+                  width={44}
+                  height={44}
+                  className="h-11 w-11 rounded-full object-cover"
+                />
+              ) : (
+                <div className="h-11 w-11 rounded-full bg-cyan-500/20" aria-hidden="true" />
+              )}
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-cyan-400">Teacher</p>
+                <p className="truncate text-sm font-bold text-white">{teacher.name}</p>
+              </div>
+            </div>
+          )}
 
           <div className="mt-6 space-y-3 rounded-2xl border border-white/10 bg-slate-950/55 p-4">
             <div className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">

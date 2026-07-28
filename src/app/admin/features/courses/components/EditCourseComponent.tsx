@@ -19,6 +19,7 @@ import { useRouter } from "next/navigation";
 type Category = "პროგრამირება" | "დიზაინი" | "მარკეტინგი" | "IT სპეციალისტი";
 
 interface EditCourseComponentProps {
+  teachers: { id: string; name: string; image: string }[];
   course: {
     id: string;
     title: string;
@@ -28,10 +29,11 @@ interface EditCourseComponentProps {
     monthlyPrice: string;
     duration: string;
     category: string;
+    teacherId: string;
   };
 }
 
-const EditCourseComponent = ({ course }: EditCourseComponentProps) => {
+const EditCourseComponent = ({ course, teachers }: EditCourseComponentProps) => {
   const router = useRouter();
   const [form, setForm] = useState({
     title: course.title || "",
@@ -40,6 +42,7 @@ const EditCourseComponent = ({ course }: EditCourseComponentProps) => {
     monthlyPrice: course.monthlyPrice || "",
     duration: course.duration || "",
     category: (course.category || "პროგრამირება") as Category,
+    teacherId: course.teacherId,
   });
 
   const [preview, setPreview] = useState<string | null>(course.image || null);
@@ -48,7 +51,7 @@ const EditCourseComponent = ({ course }: EditCourseComponentProps) => {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setForm((prev) => ({ ...prev, [name]: value }));
     if (error) setError(null);
@@ -90,6 +93,7 @@ const EditCourseComponent = ({ course }: EditCourseComponentProps) => {
       formData.append("monthlyPrice", form.monthlyPrice);
       formData.append("duration", form.duration);
       formData.append("category", form.category);
+      formData.append("teacherId", form.teacherId);
       formData.append("existingImage", course.image || "");
 
       if (file) {
@@ -272,6 +276,28 @@ const EditCourseComponent = ({ course }: EditCourseComponentProps) => {
                 <option className="text-black" value="დიზაინი">დიზაინი</option>
                 <option className="text-black" value="მარკეტინგი">მარკეტინგი</option>
                 <option className="text-black" value="IT სპეციალისტი">IT სპეციალისტი</option>
+              </select>
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="space-y-2 md:col-span-2">
+              <label className="flex items-center text-sm font-medium text-gray-400 ml-1">
+                Select Teacher
+              </label>
+              <select
+                name="teacherId"
+                value={form.teacherId}
+                onChange={handleChange}
+                disabled={teachers.length === 0}
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white/70 outline-none focus:border-cyan-500/50 transition-all disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option className="text-black" value="">
+                  {teachers.length ? "No teacher selected" : "No teachers available"}
+                </option>
+                {teachers.map((teacher) => (
+                  <option className="text-black" key={teacher.id} value={teacher.id}>
+                    {teacher.name}
+                  </option>
+                ))}
               </select>
             </motion.div>
           </div>

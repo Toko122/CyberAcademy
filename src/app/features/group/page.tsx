@@ -13,7 +13,8 @@ const GroupPage = async () => {
     name: group.name,
     description: group.description || "",
     image: group.image,
-    position: group.position || "",
+    memberType: group.member_type,
+    sortOrder: group.sort_order,
   }));
 
   return (

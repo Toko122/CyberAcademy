@@ -16,6 +16,9 @@ interface Course {
   monthly_price: PriceValue;
   duration: string;
   category?: string;
+  teacher_id: string | null;
+  teacher_name: string | null;
+  teacher_image: string | null;
 }
 
 export default function CourseDetails() {
@@ -104,6 +107,25 @@ export default function CourseDetails() {
                   priority
                 />
                 <div className="p-4 sm:p-6 space-y-6">
+                  {course.teacher_id && course.teacher_name && (
+                    <div className="flex items-center gap-3 border-b border-white/5 pb-4">
+                      {course.teacher_image ? (
+                        <Image
+                          src={course.teacher_image}
+                          alt={course.teacher_name}
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="h-12 w-12 rounded-full bg-cyan-500/20" aria-hidden="true" />
+                      )}
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold uppercase tracking-wider text-cyan-400">Teacher</p>
+                        <p className="truncate font-bold text-white">{course.teacher_name}</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex flex-col gap-2 sm:flex-row sm:justify-between sm:items-center border-b border-white/5 pb-4">
                     <div className="flex items-center gap-3 text-gray-400">
                       <Clock size={20} className="text-cyan-500" />

@@ -16,6 +16,11 @@ const CoursesPage = async () => {
     monthlyPrice: course.monthly_price,
     duration: course.duration ?? "",
     category: course.category ?? "",
+    teacher: course.teacher_id && course.teacher_name ? {
+      id: course.teacher_id,
+      name: course.teacher_name,
+      image: course.teacher_image,
+    } : null,
   }));
 
   return (

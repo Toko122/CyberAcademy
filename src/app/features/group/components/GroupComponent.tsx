@@ -1,189 +1,223 @@
-'use client';
+"use client";
 
-import React, { useRef, memo, useState, useCallback } from 'react'
-import Image from 'next/image'
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion'
-import { useRouter } from 'next/navigation'
-import { adminFetch } from '@/lib/adminApi'
+import { adminFetch } from "@/lib/adminApi";
+import type { MemberType } from "@/lib/types";
+import { ArrowDown, ArrowUp } from "lucide-react";
+import { motion } from "framer-motion";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-interface IGroup {
+interface TeamMember {
   id: string;
   name: string;
   description: string;
   image: string;
-  position: string;
+  memberType: MemberType;
+  sortOrder: number;
 }
 
-const GroupCard: React.FC<{ member: IGroup; isAdmin?: boolean }> = ({ member, isAdmin }) => {
-  const router = useRouter()
-  const cardRef = useRef<HTMLDivElement>(null)
-  const [isDeleting, setIsDeleting] = useState(false)
-  
-  const x = useMotionValue(0)
-  const y = useMotionValue(0)
+function GroupCard({
+  member,
+  isAdmin,
+  canMoveUp,
+  canMoveDown,
+  onMove,
+}: {
+  member: TeamMember;
+  isAdmin: boolean;
+  canMoveUp: boolean;
+  canMoveDown: boolean;
+  onMove: (id: string, direction: -1 | 1) => Promise<void>;
+}) {
+  const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isMoving, setIsMoving] = useState(false);
 
-  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 20 })
-  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 20 })
-
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["20deg", "-20deg"])
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-20deg", "20deg"])
-
-  const glareOpacity = useTransform(mouseXSpring, [-0.5, 0.5], [0.4, 0.1])
-  const glareX = useTransform(mouseXSpring, [-0.5, 0.5], ["0%", "100%"])
-
-  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return
-    const rect = cardRef.current.getBoundingClientRect()
-    
-    const width = rect.width
-    const height = rect.height
-    const mouseX = e.clientX - rect.left
-    const mouseY = e.clientY - rect.top
-    
-    x.set(mouseX / width - 0.5)
-    y.set(mouseY / height - 0.5)
-  }, [x, y])
-
-  const handleMouseLeave = useCallback(() => {
-    x.set(0)
-    y.set(0)
-  }, [x, y])
-
-  const handleDelete = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (!confirm('ნამდვილად გსურთ წევრის წაშლა?')) return
-    setIsDeleting(true)
-    try {
-      const result = await adminFetch('/api/admin/mutations', {
-        method: 'POST',
-        body: JSON.stringify({ entity: 'groups', action: 'delete', id: member.id }),
-      });
-      if (!result.ok) {
-        throw new Error('Delete failed');
-      }
-      router.refresh();
-    } catch {
-      alert("წევრის წაშლა ვერ მოხერხდა")
-      setIsDeleting(false)
+  const handleDelete = async () => {
+    if (!confirm("ნამდვილად გსურთ წევრის წაშლა?")) return;
+    setIsDeleting(true);
+    const result = await adminFetch("/api/admin/mutations", {
+      method: "POST",
+      body: JSON.stringify({ entity: "groups", action: "delete", id: member.id }),
+    });
+    if (!result.ok) {
+      alert("წევრის წაშლა ვერ მოხერხდა");
+      setIsDeleting(false);
+      return;
     }
-  }
+    router.refresh();
+  };
 
-  const handleEdit = (e: React.MouseEvent) => {
-    e.preventDefault()
-    e.stopPropagation()
-    router.push(`/admin/features/group/edit/${member.id}`)
-  }
+  const move = async (direction: -1 | 1) => {
+    setIsMoving(true);
+    try {
+      await onMove(member.id, direction);
+    } finally {
+      setIsMoving(false);
+    }
+  };
 
-  if (isDeleting) return null
+  if (isDeleting) return null;
 
   return (
-    <div className="[perspective:1500px] w-full max-w-80 py-5 sm:py-8 lg:py-10">
-      <motion.div
-        ref={cardRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        style={{
-          rotateX,
-          rotateY,
-          transformStyle: "preserve-3d",
-        }}
-        className="relative w-full min-h-[440px] sm:h-[460px] rounded-[24px] sm:rounded-[30px] border border-white/20 bg-gray-900/40 backdrop-blur-2xl shadow-2xl overflow-visible group"
-      >
-        <div className="absolute inset-0 rounded-[30px] overflow-hidden z-0">
-          <div className="absolute top-[-20%] left-[-20%] w-[100%] h-[100%] bg-cyan-600/20 blur-[100px] animate-pulse" />
-          <div className="absolute bottom-[-20%] right-[-20%] w-[100%] h-[100%] bg-blue-600/20 blur-[100px] animate-pulse" />
-        </div>
+    <motion.article
+      layout
+      className="group relative flex min-h-[420px] w-full max-w-80 flex-col items-center justify-center overflow-hidden rounded-[30px] border border-white/20 bg-gray-900/40 px-6 py-10 text-center shadow-2xl backdrop-blur-2xl"
+    >
+      <div className="absolute left-[-20%] top-[-20%] h-full w-full animate-pulse bg-cyan-600/20 blur-[100px]" />
+      <div className="absolute bottom-[-20%] right-[-20%] h-full w-full animate-pulse bg-blue-600/20 blur-[100px]" />
 
-        <div className="relative z-10 flex flex-col items-center justify-center h-full px-6 text-center">
-          
-          <div 
-            style={{ transform: "translateZ(80px)" }}
-            className="w-40 h-40 rounded-full p-1 bg-gradient-to-tr from-cyan-500 to-blue-500 shadow-2xl mb-6"
+      <div className="relative z-10 h-40 w-40 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 p-1 shadow-2xl">
+        <div className="relative h-full w-full overflow-hidden rounded-full border-4 border-gray-900">
+          <Image
+            src={member.image}
+            alt={member.name}
+            fill
+            sizes="160px"
+            className="object-cover grayscale transition-all duration-500 group-hover:grayscale-0"
+          />
+        </div>
+      </div>
+
+      <div className="relative z-10 mt-6 space-y-2">
+        <h3 className="text-3xl font-black tracking-tight text-white">{member.name}</h3>
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-cyan-400">
+          {member.memberType === "teacher" ? "Teacher" : "Administration"}
+        </p>
+        {member.description && (
+          <p className="pt-4 text-sm italic text-gray-400">&quot;{member.description}&quot;</p>
+        )}
+      </div>
+
+      {isAdmin && (
+        <div className="relative z-20 mt-7 grid w-full grid-cols-2 gap-2">
+          <button
+            type="button"
+            disabled={!canMoveUp || isMoving}
+            onClick={() => void move(-1)}
+            aria-label={`Move ${member.name} up`}
+            className="min-h-11 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 transition hover:bg-cyan-500 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-35"
           >
-            <div className="w-full h-full rounded-full overflow-hidden border-4 border-gray-900 relative">
-              <Image 
-                src={member.image} 
-                alt={member.name} 
-                fill
-                sizes="160px"
-                className="object-cover grayscale group-hover:grayscale-0 transition-all duration-500" 
-                loading="lazy"
-                quality={85}
-              />
-            </div>
-          </div>
-
-          <div style={{ transform: "translateZ(50px)" }} className="space-y-2">
-            <h3 className="text-white text-3xl font-black tracking-tight drop-shadow-2xl">
-              {member.name}
-            </h3>
-            <p className="text-cyan-400 font-bold uppercase text-xs tracking-[0.2em]">
-              {member.position}
-            </p>
-          </div>
-
-          <div style={{ transform: "translateZ(30px)" }} className="mt-6">
-             <p className="text-gray-400 text-sm line-clamp-3 italic opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-500">
-                &quot;{member.description}&quot;
-             </p>
-          </div>
-
-          {/* Admin controls */}
-          {isAdmin && (
-            <div
-              style={{ transform: "translateZ(100px)" }}
-              className="absolute top-4 left-4 right-4 flex flex-wrap justify-end gap-2"
-            >
-              <button
-                onClick={handleEdit}
-                className="min-h-11 px-3 py-2 cursor-pointer rounded-xl bg-blue-500/20 text-blue-400 hover:bg-blue-500 hover:text-white transition-all duration-300 backdrop-blur-sm border border-blue-500/30 text-xs font-bold"
-              >
-                რედაქტირება
-              </button>
-              <button
-                onClick={handleDelete}
-                className="min-h-11 px-3 py-2 cursor-pointer rounded-xl bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-all duration-300 backdrop-blur-sm border border-red-500/30 text-xs font-bold"
-              >
-                წაშლა
-              </button>
-            </div>
-          )}
+            <ArrowUp className="mx-auto h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            disabled={!canMoveDown || isMoving}
+            onClick={() => void move(1)}
+            aria-label={`Move ${member.name} down`}
+            className="min-h-11 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 transition hover:bg-cyan-500 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-35"
+          >
+            <ArrowDown className="mx-auto h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => router.push(`/admin/features/group/edit/${member.id}`)}
+            className="min-h-11 rounded-xl border border-blue-500/30 bg-blue-500/20 px-3 text-xs font-bold text-blue-300 transition hover:bg-blue-500 hover:text-white"
+          >
+            რედაქტირება
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleDelete()}
+            className="min-h-11 rounded-xl border border-red-500/30 bg-red-500/20 px-3 text-xs font-bold text-red-300 transition hover:bg-red-500 hover:text-white"
+          >
+            წაშლა
+          </button>
         </div>
-
-        <motion.div
-          style={{
-            opacity: glareOpacity,
-            background: `linear-gradient(135deg, white 0%, transparent 50%)`,
-            left: glareX,
-            transform: "translateZ(100px)",
-          }}
-          className="absolute inset-0 pointer-events-none blur-xl"
-        />
-
-        <div className="absolute inset-0 rounded-[30px] border-2 border-white/10 pointer-events-none" />
-      </motion.div>
-    </div>
-  )
+      )}
+    </motion.article>
+  );
 }
 
-const GroupComponent = memo(function GroupComponent({ groups, isAdmin }: { groups: IGroup[]; isAdmin?: boolean }) {
-  if (!groups || groups.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center py-20 text-center">
-        <p className="text-gray-400 text-lg">გუნდის წევრები ჯერ არ დამატებულა</p>
+function MemberSection({
+  title,
+  members,
+  isAdmin,
+  onMove,
+}: {
+  title: string;
+  members: TeamMember[];
+  isAdmin: boolean;
+  onMove: (type: MemberType, id: string, direction: -1 | 1) => Promise<void>;
+}) {
+  return (
+    <section className="space-y-8">
+      <div className="flex items-center gap-4">
+        <h2 className="text-2xl font-black text-white sm:text-4xl">{title}</h2>
+        <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/50 to-transparent" />
       </div>
-    );
-  }
+      {members.length ? (
+        <div className="grid grid-cols-1 justify-items-center gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {members.map((member, index) => (
+            <GroupCard
+              key={member.id}
+              member={member}
+              isAdmin={isAdmin}
+              canMoveUp={index > 0}
+              canMoveDown={index < members.length - 1}
+              onMove={(id, direction) => onMove(member.memberType, id, direction)}
+            />
+          ))}
+        </div>
+      ) : (
+        <p className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-slate-400">
+          No members have been added to this section yet.
+        </p>
+      )}
+    </section>
+  );
+}
+
+export default function GroupComponent({
+  groups,
+  isAdmin = false,
+}: {
+  groups: TeamMember[];
+  isAdmin?: boolean;
+}) {
+  const router = useRouter();
+  const [members, setMembers] = useState(groups);
+
+  const moveMember = async (type: MemberType, id: string, direction: -1 | 1) => {
+    const group = members.filter((member) => member.memberType === type);
+    const index = group.findIndex((member) => member.id === id);
+    const target = index + direction;
+    if (index < 0 || target < 0 || target >= group.length) return;
+    const reordered = [...group];
+    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+    setMembers((current) => [
+      ...current.filter((member) => member.memberType !== type),
+      ...reordered.map((member, sortOrder) => ({ ...member, sortOrder })),
+    ]);
+    const result = await adminFetch("/api/admin/mutations", {
+      method: "POST",
+      body: JSON.stringify({
+        entity: "groups",
+        action: "reorder",
+        memberType: type,
+        orderedIds: reordered.map((member) => member.id),
+      }),
+    });
+    if (!result.ok) {
+      setMembers(groups);
+      alert("Order could not be saved.");
+      return;
+    }
+    router.refresh();
+  };
+
+  const administration = members
+    .filter((member) => member.memberType === "administration")
+    .sort((a, b) => a.sortOrder - b.sortOrder);
+  const teachers = members
+    .filter((member) => member.memberType === "teacher")
+    .sort((a, b) => a.sortOrder - b.sortOrder);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-6 sm:gap-y-10 gap-x-6 lg:gap-x-8 justify-items-center w-full max-w-7xl mx-auto">
-      {groups.map((member) => (
-        <GroupCard key={member.id} member={member} isAdmin={isAdmin} />
-      ))}
+    <div className="mx-auto max-w-7xl space-y-20">
+      <MemberSection title="Administration" members={administration} isAdmin={isAdmin} onMove={moveMember} />
+      <MemberSection title="Teachers" members={teachers} isAdmin={isAdmin} onMove={moveMember} />
     </div>
   );
-});
-
-
-export default GroupComponent;
+}
