@@ -1,9 +1,26 @@
 "use client";
 
+import {
+  closestCenter,
+  DndContext,
+  type DragEndEvent,
+  KeyboardSensor,
+  PointerSensor,
+  TouchSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  rectSortingStrategy,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { adminFetch } from "@/lib/adminApi";
 import type { MemberType } from "@/lib/types";
-import { ArrowDown, ArrowUp } from "lucide-react";
-import { motion } from "framer-motion";
+import { GripVertical } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -20,19 +37,22 @@ interface TeamMember {
 function GroupCard({
   member,
   isAdmin,
-  canMoveUp,
-  canMoveDown,
-  onMove,
+  saving,
 }: {
   member: TeamMember;
   isAdmin: boolean;
-  canMoveUp: boolean;
-  canMoveDown: boolean;
-  onMove: (id: string, direction: -1 | 1) => Promise<void>;
+  saving: boolean;
 }) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isMoving, setIsMoving] = useState(false);
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: member.id, disabled: !isAdmin || saving });
 
   const handleDelete = async () => {
     if (!confirm("ნამდვილად გსურთ წევრის წაშლა?")) return;
@@ -49,24 +69,37 @@ function GroupCard({
     router.refresh();
   };
 
-  const move = async (direction: -1 | 1) => {
-    setIsMoving(true);
-    try {
-      await onMove(member.id, direction);
-    } finally {
-      setIsMoving(false);
-    }
-  };
-
   if (isDeleting) return null;
 
   return (
-    <motion.article
-      layout
-      className="group relative flex min-h-[420px] w-full max-w-80 flex-col items-center justify-center overflow-hidden rounded-[30px] border border-white/20 bg-gray-900/40 px-6 py-10 text-center shadow-2xl backdrop-blur-2xl"
+    <article
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        zIndex: isDragging ? 30 : undefined,
+      }}
+      className={`group relative flex min-h-[420px] w-full max-w-80 touch-manipulation flex-col items-center justify-center overflow-hidden rounded-[30px] border bg-gray-900/40 px-6 py-10 text-center backdrop-blur-2xl transition-[border-color,box-shadow,opacity] ${
+        isDragging
+          ? "border-cyan-300/70 opacity-90 shadow-[0_28px_70px_rgba(6,182,212,0.28)]"
+          : "border-white/20 shadow-2xl"
+      }`}
     >
-      <div className="absolute left-[-20%] top-[-20%] h-full w-full animate-pulse bg-cyan-600/20 blur-[100px]" />
-      <div className="absolute bottom-[-20%] right-[-20%] h-full w-full animate-pulse bg-blue-600/20 blur-[100px]" />
+      <div className="pointer-events-none absolute left-[-20%] top-[-20%] h-full w-full animate-pulse bg-cyan-600/20 blur-[100px]" />
+      <div className="pointer-events-none absolute bottom-[-20%] right-[-20%] h-full w-full animate-pulse bg-blue-600/20 blur-[100px]" />
+
+      {isAdmin && (
+        <button
+          type="button"
+          {...attributes}
+          {...listeners}
+          disabled={saving}
+          aria-label={`Drag to reorder ${member.name}`}
+          className="absolute right-4 top-4 z-30 flex min-h-11 min-w-11 touch-none cursor-grab items-center justify-center rounded-xl border border-cyan-400/30 bg-slate-950/75 text-cyan-300 shadow-lg backdrop-blur transition hover:border-cyan-300 hover:bg-cyan-500 hover:text-slate-950 active:cursor-grabbing disabled:cursor-wait disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan-300"
+        >
+          <GripVertical className="h-5 w-5" aria-hidden="true" />
+        </button>
+      )}
 
       <div className="relative z-10 h-40 w-40 rounded-full bg-gradient-to-tr from-cyan-500 to-blue-500 p-1 shadow-2xl">
         <div className="relative h-full w-full overflow-hidden rounded-full border-4 border-gray-900">
@@ -94,24 +127,6 @@ function GroupCard({
         <div className="relative z-20 mt-7 grid w-full grid-cols-2 gap-2">
           <button
             type="button"
-            disabled={!canMoveUp || isMoving}
-            onClick={() => void move(-1)}
-            aria-label={`Move ${member.name} up`}
-            className="min-h-11 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 transition hover:bg-cyan-500 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-35"
-          >
-            <ArrowUp className="mx-auto h-4 w-4" />
-          </button>
-          <button
-            type="button"
-            disabled={!canMoveDown || isMoving}
-            onClick={() => void move(1)}
-            aria-label={`Move ${member.name} down`}
-            className="min-h-11 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-cyan-300 transition hover:bg-cyan-500 hover:text-slate-950 disabled:cursor-not-allowed disabled:opacity-35"
-          >
-            <ArrowDown className="mx-auto h-4 w-4" />
-          </button>
-          <button
-            type="button"
             onClick={() => router.push(`/admin/features/group/edit/${member.id}`)}
             className="min-h-11 rounded-xl border border-blue-500/30 bg-blue-500/20 px-3 text-xs font-bold text-blue-300 transition hover:bg-blue-500 hover:text-white"
           >
@@ -126,7 +141,7 @@ function GroupCard({
           </button>
         </div>
       )}
-    </motion.article>
+    </article>
   );
 }
 
@@ -134,32 +149,59 @@ function MemberSection({
   title,
   members,
   isAdmin,
-  onMove,
+  saving,
+  onReorder,
 }: {
   title: string;
   members: TeamMember[];
   isAdmin: boolean;
-  onMove: (type: MemberType, id: string, direction: -1 | 1) => Promise<void>;
+  saving: boolean;
+  onReorder: (type: MemberType, ordered: TeamMember[]) => Promise<void>;
 }) {
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 180, tolerance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  );
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    if (!over || active.id === over.id || saving) return;
+    const oldIndex = members.findIndex((member) => member.id === active.id);
+    const newIndex = members.findIndex((member) => member.id === over.id);
+    if (oldIndex < 0 || newIndex < 0) return;
+    void onReorder(members[0].memberType, arrayMove(members, oldIndex, newIndex));
+  };
+
   return (
-    <section className="space-y-8">
+    <section className="space-y-8" aria-labelledby={`${title.toLowerCase()}-heading`}>
       <div className="flex items-center gap-4">
-        <h2 className="text-2xl font-black text-white sm:text-4xl">{title}</h2>
+        <h2 id={`${title.toLowerCase()}-heading`} className="text-2xl font-black text-white sm:text-4xl">
+          {title}
+        </h2>
         <div className="h-px flex-1 bg-gradient-to-r from-cyan-500/50 to-transparent" />
+        {isAdmin && saving && <span className="text-xs font-semibold text-cyan-300">Saving order…</span>}
       </div>
+
       {members.length ? (
-        <div className="grid grid-cols-1 justify-items-center gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {members.map((member, index) => (
-            <GroupCard
-              key={member.id}
-              member={member}
-              isAdmin={isAdmin}
-              canMoveUp={index > 0}
-              canMoveDown={index < members.length - 1}
-              onMove={(id, direction) => onMove(member.memberType, id, direction)}
-            />
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+          accessibility={{
+            screenReaderInstructions: {
+              draggable:
+                "Press space to pick up a team member. Use arrow keys to move it within this section, then press space to drop or Escape to cancel.",
+            },
+          }}
+        >
+          <SortableContext items={members.map((member) => member.id)} strategy={rectSortingStrategy}>
+            <div className="grid grid-cols-1 justify-items-center gap-8 overflow-x-clip md:grid-cols-2 lg:grid-cols-3">
+              {members.map((member) => (
+                <GroupCard key={member.id} member={member} isAdmin={isAdmin} saving={saving} />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
       ) : (
         <p className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center text-slate-400">
           No members have been added to this section yet.
@@ -178,30 +220,32 @@ export default function GroupComponent({
 }) {
   const router = useRouter();
   const [members, setMembers] = useState(groups);
+  const [savingType, setSavingType] = useState<MemberType | null>(null);
 
-  const moveMember = async (type: MemberType, id: string, direction: -1 | 1) => {
-    const group = members.filter((member) => member.memberType === type);
-    const index = group.findIndex((member) => member.id === id);
-    const target = index + direction;
-    if (index < 0 || target < 0 || target >= group.length) return;
-    const reordered = [...group];
-    [reordered[index], reordered[target]] = [reordered[target], reordered[index]];
+  const persistOrder = async (type: MemberType, reordered: TeamMember[]) => {
+    if (!isAdmin || savingType) return;
+    const previous = members;
+    const normalized = reordered.map((member, sortOrder) => ({ ...member, sortOrder }));
     setMembers((current) => [
       ...current.filter((member) => member.memberType !== type),
-      ...reordered.map((member, sortOrder) => ({ ...member, sortOrder })),
+      ...normalized,
     ]);
+    setSavingType(type);
+
     const result = await adminFetch("/api/admin/mutations", {
       method: "POST",
       body: JSON.stringify({
         entity: "groups",
         action: "reorder",
         memberType: type,
-        orderedIds: reordered.map((member) => member.id),
+        orderedIds: normalized.map((member) => member.id),
       }),
     });
+
+    setSavingType(null);
     if (!result.ok) {
-      setMembers(groups);
-      alert("Order could not be saved.");
+      setMembers(previous);
+      alert("Order could not be saved. The previous order has been restored.");
       return;
     }
     router.refresh();
@@ -216,8 +260,20 @@ export default function GroupComponent({
 
   return (
     <div className="mx-auto max-w-7xl space-y-20">
-      <MemberSection title="Administration" members={administration} isAdmin={isAdmin} onMove={moveMember} />
-      <MemberSection title="Teachers" members={teachers} isAdmin={isAdmin} onMove={moveMember} />
+      <MemberSection
+        title="Administration"
+        members={administration}
+        isAdmin={isAdmin}
+        saving={savingType === "administration"}
+        onReorder={persistOrder}
+      />
+      <MemberSection
+        title="Teachers"
+        members={teachers}
+        isAdmin={isAdmin}
+        saving={savingType === "teacher"}
+        onReorder={persistOrder}
+      />
     </div>
   );
 }
