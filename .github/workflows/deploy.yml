@@ -15,10 +15,32 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            set -e
             cd /var/www/html
             git fetch origin
             git reset --hard origin/main
-            npm install --legacy-peer-deps
-            npm run build
-            pm2 restart academy
+            npm ci --legacy-peer-deps
+
+            # Never build on top of files that the running Next.js process is serving.
+            # Keep the previous output so a failed build can be rolled back safely.
+            pm2 stop academy || true
+            rm -rf .next-previous
+            if [ -d .next ]; then
+              mv .next .next-previous
+            fi
+
+            if NODE_ENV=production npm run build; then
+              # Recreate the process so an old `next dev` PM2 command cannot survive.
+              pm2 delete academy || true
+              NODE_ENV=production pm2 start npm --name academy -- start
+              pm2 save
+              rm -rf .next-previous
+            else
+              rm -rf .next
+              if [ -d .next-previous ]; then
+                mv .next-previous .next
+              fi
+              pm2 restart academy --update-env || true
+              exit 1
+            fi
 
