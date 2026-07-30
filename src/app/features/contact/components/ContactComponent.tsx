@@ -45,7 +45,10 @@ const ContactComponent: React.FC = () => {
       <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
         <div className="absolute top-0 left-1/4 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] animate-pulse"></div>
         <div className="absolute bottom-0 right-1/4 w-[500px] h-[500px] bg-indigo-900/20 rounded-full blur-[120px]"></div>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-[0.05]"></div>
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{ backgroundImage: "url(https://www.transparenttextures.com/patterns/carbon-fibre.png)" }}
+        ></div>
       </div>
 
       <div className="max-w-6xl w-full relative z-10">
