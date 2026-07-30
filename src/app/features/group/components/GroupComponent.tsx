@@ -34,6 +34,10 @@ interface TeamMember {
   sortOrder: number;
 }
 
+function cleanSubtitle(value: string) {
+  return value.trim().replace(/^["“”„«»]+|["“”„«»]+$/g, "").trim();
+}
+
 function GroupCard({
   member,
   isAdmin,
@@ -45,6 +49,7 @@ function GroupCard({
 }) {
   const router = useRouter();
   const [isDeleting, setIsDeleting] = useState(false);
+  const subtitle = cleanSubtitle(member.description);
   const {
     attributes,
     listeners,
@@ -118,12 +123,9 @@ function GroupCard({
         <h3 className="max-w-full text-balance text-2xl font-black leading-tight tracking-tight text-white sm:text-3xl">
           {member.name}
         </h3>
-        <p className="mt-2.5 max-w-full text-center text-sm font-black leading-relaxed tracking-tight text-cyan-300 sm:text-base">
-          {member.memberType === "teacher" ? "მასწავლებელი" : "ადმინისტრაცია"}
-        </p>
-        {member.description && (
-          <p className="mt-4 line-clamp-3 max-w-full text-sm font-medium leading-relaxed text-slate-400">
-            &quot;{member.description}&quot;
+        {subtitle && (
+          <p className="mt-6.5 line-clamp-3 max-w-full text-[15px] font-medium leading-relaxed text-slate-400">
+            {subtitle}
           </p>
         )}
       </div>
