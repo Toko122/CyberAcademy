@@ -22,11 +22,12 @@ jobs:
             npm ci --legacy-peer-deps
 
             # Never build on top of files that the running Next.js process is serving.
-            # Keep the previous output so a failed build can be rolled back safely.
+            # Keep rollback output outside the source tree so Tailwind cannot scan it.
+            backup_dir="/var/www/.academy-next-previous"
             pm2 stop academy || true
-            rm -rf .next-previous
+            rm -rf .next-previous "$backup_dir"
             if [ -d .next ]; then
-              mv .next .next-previous
+              mv .next "$backup_dir"
             fi
 
             if NODE_ENV=production npm run build; then
@@ -34,11 +35,11 @@ jobs:
               pm2 delete academy || true
               NODE_ENV=production pm2 start npm --name academy -- start
               pm2 save
-              rm -rf .next-previous
+              rm -rf "$backup_dir"
             else
               rm -rf .next
-              if [ -d .next-previous ]; then
-                mv .next-previous .next
+              if [ -d "$backup_dir" ]; then
+                mv "$backup_dir" .next
               fi
               pm2 restart academy --update-env || true
               exit 1
