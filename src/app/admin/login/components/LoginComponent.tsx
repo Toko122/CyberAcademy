@@ -1,5 +1,4 @@
 "use client";
-import { useRouter } from 'next/navigation';
 import React, { useState, useCallback } from 'react';
 
 const LoginComponent = () => {
@@ -7,7 +6,6 @@ const LoginComponent = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,6 +16,8 @@ const LoginComponent = () => {
     try {
       const response = await fetch('/api/admin/login', {
         method: 'POST',
+        credentials: 'same-origin',
+        cache: 'no-store',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
@@ -28,14 +28,14 @@ const LoginComponent = () => {
         throw new Error(payload.message || 'ავტორიზაცია ვერ განხორციელდა');
       }
 
-      router.replace('/admin/features/dashboard');
+      window.location.replace(payload.redirectTo || '/admin/features/dashboard');
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "შეცდომა ავტორიზაციაზე";
       setError(message);
     } finally {
       setLoading(false);
     }
-  }, [email, loading, password, router]);
+  }, [email, loading, password]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-3 sm:px-4 py-8">

@@ -1,7 +1,9 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { authenticateAdmin, createSessionToken, SESSION_COOKIE } from "@/lib/auth";
 import { serverEnv } from "@/lib/env";
+import { ADMIN_DASHBOARD_PATH } from "@/lib/session";
+
+export const dynamic = "force-dynamic";
 
 export async function POST(request: Request) {
   try {
@@ -20,15 +22,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ success: false, message: "Invalid email or password" }, { status: 401 });
     }
     const token = await createSessionToken(user);
-    const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE, token, {
+    const response = NextResponse.json({ success: true, redirectTo: ADMIN_DASHBOARD_PATH });
+    response.cookies.set(SESSION_COOKIE, token, {
       httpOnly: true,
       secure: serverEnv.isProduction,
       sameSite: "lax",
       path: "/",
       maxAge: 60 * 60 * 8,
     });
-    return NextResponse.json({ success: true, user: { id: user.id, role: user.role } });
+    response.headers.set("Cache-Control", "no-store");
+    return response;
   } catch (error) {
     const details = error instanceof Error
       ? { name: error.name, code: "code" in error ? String(error.code) : undefined }

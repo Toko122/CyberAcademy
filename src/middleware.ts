@@ -1,17 +1,22 @@
 import { jwtVerify } from "jose/jwt/verify";
 import { NextResponse, type NextRequest } from "next/server";
-import { SESSION_AUDIENCE, SESSION_COOKIE, SESSION_ISSUER } from "@/lib/session";
+import { ADMIN_DASHBOARD_PATH, ADMIN_LOGIN_PATH, SESSION_AUDIENCE, SESSION_COOKIE, SESSION_ISSUER } from "@/lib/session";
+
+function redirectToLogin(request: NextRequest) {
+  const response = NextResponse.redirect(new URL(ADMIN_LOGIN_PATH, request.url));
+  response.cookies.delete(SESSION_COOKIE);
+  return response;
+}
 
 export async function middleware(request: NextRequest) {
-  if (request.nextUrl.pathname === "/admin/login") return NextResponse.next();
-
   const token = request.cookies.get(SESSION_COOKIE)?.value;
-  if (!token) return NextResponse.redirect(new URL("/admin/login", request.url));
+  const isLoginPage = request.nextUrl.pathname === ADMIN_LOGIN_PATH;
+  if (!token) return isLoginPage ? NextResponse.next() : redirectToLogin(request);
 
   const jwtSecret = process.env.JWT;
   if (!jwtSecret || jwtSecret.length < 32) {
     console.error("Admin middleware unavailable: JWT is missing or too short");
-    return NextResponse.redirect(new URL("/admin/login", request.url));
+    return isLoginPage ? NextResponse.next() : redirectToLogin(request);
   }
 
   try {
@@ -19,12 +24,12 @@ export async function middleware(request: NextRequest) {
       issuer: SESSION_ISSUER,
       audience: SESSION_AUDIENCE,
     });
-    if (payload.role !== "admin") return NextResponse.redirect(new URL("/admin/login", request.url));
+    if (payload.role !== "admin") return redirectToLogin(request);
   } catch {
-    return NextResponse.redirect(new URL("/admin/login", request.url));
+    return redirectToLogin(request);
   }
 
-  return NextResponse.next();
+  return isLoginPage ? NextResponse.redirect(new URL(ADMIN_DASHBOARD_PATH, request.url)) : NextResponse.next();
 }
 
 export const config = {
