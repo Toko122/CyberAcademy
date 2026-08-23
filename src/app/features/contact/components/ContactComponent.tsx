@@ -81,9 +81,6 @@ const ContactComponent: React.FC = () => {
                   კონტაქტი
                 </h2>
                 <div className="h-1 w-16 bg-blue-600 rounded-full mb-8 shadow-[0_0_10px_#2563eb]"></div>
-                <p className="text-blue-100/50 leading-relaxed font-light italic text-lg">
-                  ჩვენი აკადემია მდებარეობს სასტუმრო <span className="text-blue-400 font-medium italic">დემეტრე თავდადებულის 49</span>.
-                </p>
               </div>
 
               <div className="space-y-8 sm:space-y-12">
