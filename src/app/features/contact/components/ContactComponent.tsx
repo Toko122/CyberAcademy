@@ -6,6 +6,7 @@ import { Mail, Phone, MapPin, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Card from './Links';
+import { ACADEMY_LOCATION } from '@/lib/academy-location';
 
 interface ContactInfoProps {
   icon: React.ReactNode;
@@ -82,7 +83,7 @@ const ContactComponent: React.FC = () => {
                 </h2>
                 <div className="h-1 w-16 bg-blue-600 rounded-full mb-8 shadow-[0_0_10px_#2563eb]"></div>
                 <p className="text-blue-100/50 leading-relaxed font-light italic text-lg">
-                  ჩვენი აკადემია მდებარეობს სასტუმრო <span className="text-blue-400 font-medium italic">&quot;თურსას&quot;</span> შენობაში.
+                  ჩვენი აკადემია მდებარეობს მისამართზე <span className="text-blue-400 font-medium italic">{ACADEMY_LOCATION.address}</span>.
                 </p>
               </div>
 
@@ -90,8 +91,8 @@ const ContactComponent: React.FC = () => {
                 <ContactInfo 
                   icon={<Phone size={24} />} 
                   label="ტელეფონი" 
-                  value="599 27 55 62" 
-                  href="tel:+995599275562" 
+                  value="577 427 000"
+                  href="tel:+995577427000"
                 />
                 <ContactInfo 
                   icon={<Mail size={24} />} 
@@ -102,7 +103,7 @@ const ContactComponent: React.FC = () => {
                 <ContactInfo 
                   icon={<MapPin size={24} />} 
                   label="მისამართი" 
-                  value="აღმაშენებლის 13ბ, ბათუმი" 
+                  value={ACADEMY_LOCATION.address}
                 />
                 <Card />
               </div>
@@ -110,8 +111,8 @@ const ContactComponent: React.FC = () => {
 
             <div className="lg:col-span-3 min-h-[340px] sm:min-h-[420px] lg:min-h-[500px] lg:h-auto w-full relative group">
               <iframe
-                title="Cyber Academy Location - Hotel Tursa"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1489.816654275031!2d41.6151619!3d41.6312487!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x406785890f5b991b%3A0x8e82a392095f3246!2sHotel%20Tursa!5e0!3m2!1ska!2sge!4v1700000000000!5m2!1ska!2sge"
+                title={`Cyber Academy Location - ${ACADEMY_LOCATION.address}`}
+                src={ACADEMY_LOCATION.googleMapsEmbedUrl}
                 className="absolute inset-0 w-full h-full grayscale-[0.2] contrast-[1.2] brightness-[0.9]"
                 style={{ border: 0 }}
                 loading="lazy"
@@ -121,7 +122,7 @@ const ContactComponent: React.FC = () => {
               <div className="absolute inset-0 pointer-events-none border-l border-white/5 shadow-[inset_30px_0_60px_rgba(0,0,0,0.6)]"></div>
               
               <div className="absolute top-3 left-3 right-3 sm:top-6 sm:left-auto sm:right-6 bg-slate-900/80 backdrop-blur-md border border-white/10 px-3 sm:px-4 py-2 rounded-xl transition-opacity duration-500">
-                <p className="text-blue-400 text-[10px] font-bold tracking-widest uppercase">ლოკაცია: სასტუმრო თურსა</p>
+                <p className="text-blue-400 text-[10px] font-bold tracking-widest uppercase">ლოკაცია: {ACADEMY_LOCATION.address}</p>
               </div>
             </div>
 

@@ -2,6 +2,7 @@ import React from 'react';
 import Image from 'next/image';
 import { Phone, Mail, MapPin } from 'lucide-react'; 
 import Link from 'next/link';
+import { ACADEMY_LOCATION } from '@/lib/academy-location';
 
 const AboutUsComponent = () => {
   return (
@@ -36,7 +37,7 @@ const AboutUsComponent = () => {
             
             <div className="flex flex-col items-center p-4 bg-blue-50 rounded-lg">
               <MapPin className="text-blue-600 mb-2" />
-              <p className="text-gray-700 font-medium text-center">ბათუმი, აღმაშენებლის 13ბ</p>
+              <p className="text-gray-700 font-medium text-center">{ACADEMY_LOCATION.address}</p>
             </div>
 
             <div className="flex flex-col items-center p-4 bg-blue-50 rounded-lg">
@@ -47,10 +48,10 @@ const AboutUsComponent = () => {
 
           <div className="w-full h-72 sm:h-96 rounded-xl overflow-hidden shadow-inner border">
             <iframe
-              title="Cyber Academy Location"
+              title={`Cyber Academy Location - ${ACADEMY_LOCATION.address}`}
               width="100%"
               height="100%"
-              src="https://maps.google.com/maps?q=Batumi,Agmashenebeli%2013b&t=&z=15&ie=UTF8&iwloc=&output=embed"
+              src={ACADEMY_LOCATION.googleMapsEmbedUrl}
             ></iframe>
           </div>
         </div>
