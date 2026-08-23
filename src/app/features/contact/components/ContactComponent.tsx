@@ -6,6 +6,7 @@ import { Mail, Phone, MapPin, Globe } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Card from './Links';
+import { ACADEMY_LOCATION } from '@/lib/academy-location';
 
 interface ContactInfoProps {
   icon: React.ReactNode;
@@ -109,14 +110,12 @@ const ContactComponent: React.FC = () => {
             </div>
 
             <div className="lg:col-span-3 min-h-[340px] sm:min-h-[420px] lg:min-h-[500px] lg:h-auto w-full relative group">
-              <iframe
-                title="Cyber Academy Location - Hotel Tursa"
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1489.816654275031!2d41.6151619!3d41.6312487!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x406785890f5b991b%3A0x8e82a392095f3246!2sHotel%20Tursa!5e0!3m2!1ska!2sge!4v1700000000000!5m2!1ska!2sge"
-                className="absolute inset-0 w-full h-full grayscale-[0.2] contrast-[1.2] brightness-[0.9]"
-                style={{ border: 0 }}
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
+               <iframe
+              title={`Cyber Academy Location - ${ACADEMY_LOCATION.address}`}
+              width="100%"
+              height="100%"
+              src={ACADEMY_LOCATION.googleMapsEmbedUrl}
+            ></iframe>
               
               <div className="absolute inset-0 pointer-events-none border-l border-white/5 shadow-[inset_30px_0_60px_rgba(0,0,0,0.6)]"></div>
             </div>
