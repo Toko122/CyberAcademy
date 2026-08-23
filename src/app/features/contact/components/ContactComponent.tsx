@@ -82,7 +82,7 @@ const ContactComponent: React.FC = () => {
                 </h2>
                 <div className="h-1 w-16 bg-blue-600 rounded-full mb-8 shadow-[0_0_10px_#2563eb]"></div>
                 <p className="text-blue-100/50 leading-relaxed font-light italic text-lg">
-                  ჩვენი აკადემია მდებარეობს სასტუმრო <span className="text-blue-400 font-medium italic">&quot;თურსას&quot;</span> შენობაში.
+                  ჩვენი აკადემია მდებარეობს სასტუმრო <span className="text-blue-400 font-medium italic">დემეტრე თავდადებულის 49</span>.
                 </p>
               </div>
 
@@ -90,8 +90,8 @@ const ContactComponent: React.FC = () => {
                 <ContactInfo 
                   icon={<Phone size={24} />} 
                   label="ტელეფონი" 
-                  value="599 27 55 62" 
-                  href="tel:+995599275562" 
+                  value="577 427 000" 
+                  href="tel:+995577427000" 
                 />
                 <ContactInfo 
                   icon={<Mail size={24} />} 
@@ -102,7 +102,7 @@ const ContactComponent: React.FC = () => {
                 <ContactInfo 
                   icon={<MapPin size={24} />} 
                   label="მისამართი" 
-                  value="აღმაშენებლის 13ბ, ბათუმი" 
+                  value="დემეტრე თავდადებულის 49" 
                 />
                 <Card />
               </div>
